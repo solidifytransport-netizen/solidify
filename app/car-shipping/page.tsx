@@ -25,7 +25,7 @@ const FAQ: readonly FaqItem[] = [
   },
   {
     q: "Where do you ship vehicles?",
-    a: "Across all 48 contiguous states, with strong Western-US coverage — California, Oregon, Washington, Nevada, Arizona, Utah, Idaho, Montana, Wyoming, Colorado and New Mexico.",
+    a: "Across all 48 contiguous states, with strong Western-US coverage — California, Oregon, Washington, Nevada, Arizona, Utah, Idaho, Montana, Wyoming, Colorado, New Mexico and Texas.",
   },
   {
     q: "What do I need to give you for a quote?",

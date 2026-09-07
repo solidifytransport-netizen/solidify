@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/Button";
  *
  * The page next door, /owner-operators, is for people who own their Truck /
  * Power Unit: they have an application to complete and, once approved,
- * onboarding paperwork to file. This page is the other audience entirely, and
+ * paperwork that follows. This page is the other audience entirely, and
  * it does NOT carry the external application portal.
  *
  * CONTENT RULE, and the reason this page reads the way it does: Solidify has
@@ -70,7 +70,7 @@ const CARRIER = [
 const FAQ: readonly FaqItem[] = [
   {
     q: "Is this the same as the owner-operator route?",
-    a: "No. Owner-operators run their own Truck / Power Unit, carry their own insurance and complete an application followed by secure onboarding. This page is for drivers who would run equipment provided by Solidify. If you own your truck, start on the Owner Operators page instead.",
+    a: "No. Owner-operators run their own Truck / Power Unit and carry their own insurance, and they apply through the driver application portal. This page is for drivers who would run equipment provided by Solidify. If you own your truck, start on the Owner Operators page instead.",
   },
   {
     q: "How do I apply?",
@@ -137,7 +137,7 @@ export default function BecomeADriverPage() {
       />
 
       {/* The regulatory floor — stated as regulation, never as Solidify policy. */}
-      <Section surface="deep" id="qualifying" ariaLabelledBy="qualifying-title" head="index" className="relative overflow-clip" field="transit" fieldIntensity={0.8}>
+      <Section surface="deep" id="qualifying" ariaLabelledBy="qualifying-title" head="index" className="relative overflow-clip">
         <div className="shell relative flex flex-col gap-10">
           <div className="flex items-center justify-between gap-6 border-t border-[var(--line-strong)] pt-4">
             <SectionMark index={4} label="Before you get in touch" />

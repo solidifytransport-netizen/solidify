@@ -32,13 +32,10 @@ const sinkPort = process.env.MAIL_SINK_PORT ?? "3479";
 
 const body = `# Written by scripts/local-env.mjs — gitignored, local only.
 NEXT_PUBLIC_SITE_URL=http://localhost:${port}
-ONBOARDING_ACCESS_CODE_HASHES=${hash}
-ONBOARDING_SESSION_SECRET=${randomBytes(32).toString("base64url")}
 RESEND_API_KEY=local-sink-${token}
 RESEND_API_BASE=http://127.0.0.1:${sinkPort}
 MAIL_FROM_EMAIL=quotes@solidifytransport.test
 INQUIRY_TO_EMAIL=inquiries@solidifytransport.test
-ONBOARDING_TO_EMAIL=onboarding@solidifytransport.test
 `;
 
 writeFileSync(FILE, body, { mode: 0o600 });

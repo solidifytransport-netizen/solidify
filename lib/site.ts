@@ -2,9 +2,8 @@
  * SOLIDIFY TRANSPORT — the single factual source of truth.
  *
  * CONTENT RULE: every company fact below comes from the client's supplied
- * information (onboarding paperwork, insurance instructions, direct-deposit
- * authorisation, and the project brief). Nothing here is inferred, rounded
- * or invented.
+ * information (the carrier profile, insurance instructions and the project
+ * brief). Nothing here is inferred, rounded or invented.
  *
  * Solidify is an AUTO TRANSPORT MOTOR CARRIER. It is not a broker, not a
  * marketplace, not a load board, not a general-freight carrier. Copy that

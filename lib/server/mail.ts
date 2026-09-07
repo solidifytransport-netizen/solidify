@@ -3,7 +3,7 @@
  * Solidify.
  *
  * This module used to be inquiry-only, with a standing rule that the
- * onboarding pipeline must never import it because a TIN or a bank number
+ * onboarding pipeline was never allowed to import it because a TIN or a bank number
  * must never sit in a mailbox. That rule no longer holds: the client
  * requires that this website keep no submission record, so email IS the
  * record, onboarding included. Do not "restore" the old rule — restoring it

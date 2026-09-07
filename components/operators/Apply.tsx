@@ -5,10 +5,12 @@ import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger, EASE, MQ } from "@/lib/motion";
 import { Plate } from "@/components/ui/Plate";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
-import { Section, SectionMark, Lines } from "@/components/ui/Primitives";
+import { Section, SectionMark, Lines, PhoneLink } from "@/components/ui/Primitives";
 import { Button } from "@/components/ui/Button";
 import { LightSweep } from "@/components/ui/LightSweep";
-import { APPLY_URL } from "@/lib/site";
+import { APPLY_URL, INSURANCE } from "@/lib/site";
+
+const holderLine = INSURANCE.certificateHolder.join(", ");
 
 type Stage = {
   title: string;
@@ -41,12 +43,10 @@ const STAGES: readonly Stage[] = [
   { title: "Review requirements", text: "Check your Truck / Power Unit, licensing and insurance against the requirements above before you start.", where: "solidify" },
   { title: "Continue to driver application", text: "The application is completed through an external driver application portal. It opens in a new tab.", where: "portal" },
   { title: "Application review", text: "Solidify reviews the application you submitted on the portal.", where: "portal" },
-  { title: "Approved operator", text: "Once you are approved, Solidify gives you an access code for onboarding.", where: "portal" },
-  { title: "Secure Solidify onboarding", text: "Use the code further down this page to complete your profile, equipment, insurance, W-9 and direct deposit.", where: "solidify" },
-  { title: "Submission delivered to Solidify", text: "Your completed onboarding is delivered straight to Solidify. This website keeps no copy of it.", where: "solidify" },
+  { title: "Approved and running", text: "Once you are approved, Solidify picks it up with you directly — the agreement, the paperwork and your first dispatch.", where: "solidify" },
 ];
 
-/** The line leaves Solidify's ground after stage 03 and returns at stage 06. */
+/** The line leaves Solidify's ground after stage 03 and returns at stage 05. */
 const HANDOFF = 2;
 /** Scroll travel per stage, in px, on top of the horizontal distance. */
 const SETTLE = 210;
@@ -132,7 +132,7 @@ export function ApplicationRoute() {
   const pct = (i: number) => (i / (STAGES.length - 1)) * 100;
 
   return (
-    <Section surface="deep" id="route" ariaLabelledBy="route-title" head="index" flush className="overflow-clip" field="transit" fieldIntensity={0.8}>
+    <Section surface="deep" id="route" ariaLabelledBy="route-title" head="index" flush className="overflow-clip">
       <div ref={root} className="relative flex min-h-[100svh] flex-col justify-center gap-10 py-[clamp(4rem,8vh,6rem)]">
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-40" />
 
@@ -141,12 +141,12 @@ export function ApplicationRoute() {
             <div className="lg:col-span-7">
               <SectionMark index={3} label="From here to your first load" />
               <RevealText as="h2" id="route-title" className="display-md mt-5 max-w-[15ch]" mode="lines">
-                <Lines text={["Seven stages,", "start to first load."]} />
+                <Lines text={["Five stages,", "start to first load."]} />
               </RevealText>
             </div>
             <Reveal className="lg:col-span-5 lg:justify-self-end">
               <p className="lead lg:max-w-[38ch]">
-                Four of them happen on Solidify&apos;s own systems. The application itself is completed on an external driver application portal — the break in the line is where that happens.
+                Three of them are Solidify&apos;s. The application itself is completed on an external driver application portal — the break in the line is where that happens.
               </p>
             </Reveal>
           </div>
@@ -225,11 +225,34 @@ export function ApplicationRoute() {
   );
 }
 
+type Item = { label: string; detail: string };
+
 /**
- * The application panel. Deliberately plain about the transition: the operator
- * should know exactly where they are about to go, what to have ready, and what
- * happens when they come back. Solidify's relationship with the portal's
- * operator is not confirmed, so nothing here describes it as run for Solidify.
+ * What the portal will ask for.
+ *
+ * This replaces the six-step onboarding wizard that used to live on this page
+ * and collect a W-9, a taxpayer identification number, bank routing and
+ * account numbers and a voided check. The client does not want that form, so
+ * it is gone — the whole thing, including its API. What is useful to an
+ * applicant is knowing what to have to hand BEFORE the portal opens, which is
+ * what this is, and the insurance block is the client's confirmed wording
+ * verbatim.
+ *
+ * Nothing here describes how Solidify collects tax or payment details after
+ * approval, because that is now off this website and has not been confirmed.
+ */
+const CHECKLIST: readonly Item[] = [
+  { label: "Your business and contact details", detail: "The legal name you operate under, and the best number and address to reach you on." },
+  { label: "Truck / Power Unit", detail: "The VIN, year, make and model of the unit you will run." },
+  { label: "Licensing and service area", detail: "Your licensing details and the parts of the country you want to take loads in." },
+  { label: "Insurance certificate", detail: "From your insurance agent, showing the four limits above and " + holderLine + " as certificate holder and additional insured." },
+  { label: "Tax and payment details", detail: "Handled directly with Solidify once you are approved. They are not collected on this website." },
+];
+
+/**
+ * The application panel: what to have ready, then the door out. Solidify's
+ * relationship with the portal's operator is not confirmed, so nothing here
+ * describes it as run for or by Solidify.
  */
 export function ApplyPanel() {
   return (
@@ -238,32 +261,45 @@ export function ApplyPanel() {
         <div className="plate plate-steel relative overflow-hidden">
           <div aria-hidden className="pointer-events-none absolute inset-0 guides" />
           <LightSweep trigger="inview" delay={0.4} />
-          <div className="relative grid gap-8 p-6 lg:grid-cols-12 lg:items-center lg:gap-12 lg:p-10">
-            <div className="lg:col-span-4">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[var(--radius-card)]">
-                <Plate slot="oo-apply" sizes="(max-width: 1024px) 90vw, 30vw" aspect="fill" parallax={6} reveal={false} overscan={1.06} grade="cool" dim={0.82} className="!absolute inset-0 h-full w-full" />
-                <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,transparent_38%,rgba(5,7,11,0.82))]" />
-                <div className="absolute inset-x-0 bottom-0 p-5">
-                  <span className="spec !text-[var(--text-hi)]">Stage 03 · the application</span>
-                </div>
+          <div className="relative grid gap-10 p-6 lg:grid-cols-12 lg:gap-12 lg:p-10">
+            <div className="flex flex-col gap-5 lg:col-span-5">
+              <SectionMark index={4} label="The application" />
+              <RevealText as="h2" id="apply-title" className="display-md max-w-[14ch]" mode="lines">
+                <Lines text={["Have these", "ready."]} />
+              </RevealText>
+              <p className="lead">
+                The application is completed through an external driver application portal. It will open in a new tab.
+              </p>
+              <div className="relative mt-2 overflow-hidden rounded-[var(--radius-card)]">
+                <Plate slot="oo-apply" sizes="(max-width: 1024px) 90vw, 34vw" aspect={4 / 3} parallax={6} reveal={false} overscan={1.06} grade="cool" dim={0.82} />
+                <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(5,7,11,0.8))]" />
+                <span className="absolute inset-x-0 bottom-0 p-5 spec !text-[var(--text-hi)]">Stage 03 · the application</span>
               </div>
             </div>
-            <div className="flex flex-col gap-5 lg:col-span-8">
-              <SectionMark index={4} label="The application" />
-              <RevealText as="h2" id="apply-title" className="display-md max-w-[16ch]" mode="lines">
-                <Lines text={["Start your", "application."]} />
-              </RevealText>
-              <p className="lead">The application is completed through an external driver application portal. It will open in a new tab.</p>
-              <p className="body max-w-[58ch]">
-                Have your Truck / Power Unit details, licensing and insurance information to hand. Once Solidify has reviewed and approved your application, you will be given an access code to complete secure onboarding back here on this page.
-              </p>
-              <div className="flex flex-wrap items-center gap-4 pt-1">
-                <Button href={APPLY_URL} external variant="metal">
-                  Continue to driver application
-                </Button>
-                <Button href="#onboarding" variant="steel">
-                  Approved? Begin onboarding
-                </Button>
+
+            <div className="flex flex-col gap-8 lg:col-span-7">
+              <ol role="list" className="flex flex-col divide-y divide-[var(--line)] border-y border-[var(--line)]">
+                {CHECKLIST.map((c, i) => (
+                  <li key={c.label} className="grid grid-cols-[2.6rem_1fr] items-baseline gap-4 py-5">
+                    <span className="numeral text-[var(--step--1)] text-[rgba(179,212,255,0.85)]">{String(i + 1).padStart(2, "0")}</span>
+                    <div className="flex flex-col gap-1.5">
+                      <h3 className="title-sm">{c.label}</h3>
+                      <p className="small max-w-[52ch]">{c.detail}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-center gap-4">
+                  <Button href={APPLY_URL} external variant="metal">
+                    Continue to driver application
+                  </Button>
+                  <span className="small">
+                    Or call <PhoneLink className="link-underline font-medium text-[var(--text-hi)]" />
+                  </span>
+                </div>
+                <p className="field-note">Opens the external driver application portal in a new tab. Nothing you enter there is handled by this website.</p>
               </div>
             </div>
           </div>

@@ -19,18 +19,19 @@ npm run typecheck
 npm run qa           # headless multi-viewport QA (see below) — needs a running server
 node scripts/peek.mjs car-shipping 1536 864 8   # quick headless look at one route
 node scripts/mail-sink.mjs 3479          # a local stand-in for the mail provider
-node scripts/mail-sink.mjs 3479 --fail   # …that refuses, for the delivery-failure phase
-npm run env:local    # LOCAL ONLY: .env.local + a test access code, pointed at the sink
-npm run onboarding:smoke -- http://localhost:3477 --phase unconfigured|configured|delivery-failure
-npm run onboarding:ui -- http://localhost:3477   # headless UI check of the stepper (needs SMOKE_ACCESS_CODE)
+node scripts/mail-sink.mjs 3479 --fail   # …that refuses, to prove a failed send is reported
+npm run env:local    # LOCAL ONLY: writes a gitignored .env.local pointed at the sink
+npm run shaders      # renders any shader programs on their own to .audit/
+npm run imagery:derive <src> <name> <l> <t> <w> <h>   # cut a new master from an existing one
 ```
 
 Local verification, end to end: start the mail sink, run `npm run env:local`
-(it prints a test access code and writes a gitignored `.env.local` pointed at
-the sink), restart `next dev`, then run all three smoke phases, the UI check
-and `npm run qa`. Remove it again with `npm run env:local -- --remove`.
-Rate limits are real even locally; the smoke test gives each request its own
-`x-forwarded-for` so a 429 never stands in for the answer under test.
+(it writes a gitignored `.env.local` pointed at the sink), restart **`next
+dev`**, then run `npm run qa`. Remove it again with
+`npm run env:local -- --remove`. It has to be `next dev`, not `next start`:
+`RESEND_API_BASE` is ignored when `NODE_ENV=production`, by design, so a
+production build cannot be pointed at a local sink and will honestly report a
+failed delivery instead.
 
 ## Routes
 
@@ -39,13 +40,13 @@ Rate limits are real even locally; the smoke test gives each request its own
 | `/` | Homepage — hero scene, audience lanes, statement, pickup→transit→delivery sequence, coverage, carrier sheet, closing |
 | `/car-shipping` | Consumer + commercial vehicle shipping, situations strip, quote console with route map, FAQ |
 | `/oem-dealerships` | OEM, dealership and dealer-group transport, the movement board, commercial inquiry |
-| `/owner-operators` | **Owner-operators — people who own their Truck / Power Unit.** Recruiting road, requirements, the seven-stage application route, the external application, and secure onboarding once approved. The only route that leaves the domain |
+| `/owner-operators` | **Owner-operators — people who own their Truck / Power Unit.** Recruiting road, requirements, the five-stage application route, and the application itself. The only route that leaves the domain |
 | `/become-a-driver` | **Drivers who would run Solidify's own equipment.** What auto transport actually involves, who the carrier is, the federal qualification floor, and a direct line to Solidify. No portal, no invented pay figures |
 | `/about` | Company identity, coverage, how it operates |
 | `/contact` | Three separated inquiry lanes (vehicle · OEM · driving), contact details, and both driver routes |
 | `/terms` | Terms of use for the website. Deliberately narrow — the transport itself is governed by the agreement for that move |
 | `/privacy` | Privacy notice |
-| `/api/*` | Inquiry + onboarding pipelines — see `lib/server/README.md` |
+| `/api/*` | The inquiry pipeline — see `lib/server/README.md` |
 
 ## The two driver audiences
 
@@ -53,8 +54,9 @@ They are different people and the site never mixes them, because the paperwork
 does not:
 
 - **Owner-operators** own their Truck / Power Unit and carry their own
-  insurance. They have an application to complete (externally) and, once
-  approved, onboarding to file. All of that lives on `/owner-operators`.
+  insurance. `/owner-operators` covers the compensation, the requirements, what
+  the application will ask for, and then opens it. Anything after approval is
+  handled with Solidify directly, off this website.
 - **Drivers** would run Solidify's equipment. Solidify has confirmed nothing
   about that programme — no pay basis, no experience or endorsement minimums,
   no benefits, no hiring areas — so `/become-a-driver` states the company, the
@@ -84,37 +86,45 @@ identical.
 | Scenario story (pinned, Flip, six photographic panels) | `/car-shipping` | `components/car/Situations.tsx` |
 | Closing (CTA + footer as one scene) | every page | `components/layout/Closing.tsx` |
 
-### WebGL
+### WebGL and 3D
 
-Two different things, deliberately:
+Two three.js surfaces, both of which show something real:
 
-- **The hero scene** (`components/webgl/HeroScene.tsx`, three.js) — the hauler
-  photograph on a fullscreen quad with mask-driven depth parallax, a scroll
-  dolly, road-light traces and a five-slat reveal. Home only.
-- **The ambient surfaces** (`components/webgl/Field.tsx` on
-  `lib/webgl/surface.ts`) — three fragment programs (`transit` · `network` ·
-  `dusk`) that add LIGHT to a section: travelling trails, a lit node field,
-  drifting volume. Raw WebGL2 in ~150 lines rather than three.js, because a
-  fullscreen triangle does not need a scene graph and this keeps four extra
-  routes off a 150 KB dependency.
+- **The hero scene** (`components/webgl/HeroScene.tsx`) — the loaded rig on a
+  fullscreen quad with mask-driven depth parallax, a scroll dolly, road-light
+  traces confined to the road and a five-slat reveal. Home only. The masks are
+  rasterised from hand-authored polygons in `lib/hero-scene.json` by
+  `scripts/masks.mjs`, so **changing the hero photograph means re-authoring
+  those polygons**; the texture width is clamped to the ladder the master
+  actually produced.
+- **The coverage board** (`components/webgl/CoverageScene.tsx`) — the 48
+  contiguous states extruded from the same path data the SVG map uses, lit with
+  a key/rim/hemisphere rig, raycast for hover, and risen out of the ground west
+  to east on scroll-in. Focus states stand taller and carry emissive light.
+  Shown on every route with a coverage section; the SVG stays underneath as the
+  fallback and keeps the column's height.
 
-Rules, all QA-asserted or built into the runtime:
+An earlier revision put three abstract shader fields behind sections instead
+(travelling trails, a node field, drifting volume). They were removed: an
+ambient light field says nothing about the business, and coverage — which is a
+fact you can point at — does.
 
-- **At most one canvas per route**, never on a route already carrying the hero
-  scene. `Section` takes a `field` prop so any section can host the route's one
-  surface.
-- A surface goes in a section that is **not** a full-bleed photograph. Behind
-  one it is invisible; screened over one it fogs the image. Both were tried.
-- Blending is premultiplied source-over and a shader reports **coverage** as
-  alpha, so the section shows through wherever the shader is dark.
+Rules, QA-asserted or built into the runtime:
+
+- **At most one canvas per route, two on home** (hero + coverage board).
 - Painting only while on screen and the tab is visible; one GSAP-ticker
-  subscription shared with Lenis; DPR capped by device tier; sustained slow
-  frames step the buffer down twice and then stop — a surface never deletes
-  itself.
-- Nothing mounts at all under reduced motion.
+  subscription shared with Lenis; DPR capped by device tier; raycasting
+  throttled to ~20/s; complete disposal including `forceContextLoss`.
+- Neither mounts under reduced motion, and the board also sits out on the
+  lowest device tier.
 
-Preview the three programs on their own, without a build or a page load:
-`node scripts/shader-preview.mjs` → `.audit/shaders.png`.
+### Interaction
+
+`components/ui/Tilt.tsx` exposes `useTilt`, which gives a card real perspective
+— rotation about its own axes, a lift toward the viewer, and a specular
+highlight that tracks the pointer — through `gsap.quickTo`. A hook rather than
+a wrapper because several targets are flex or Flip children whose own classes
+control their layout. Fine pointers only; nothing under reduced motion.
 
 Editorial system: `components/ui/Editorial.tsx` (`feature` · `statement` ·
 `plate` · `ledger`), `SectionHead` patterns (`editorial` · `index` · `caption` ·
@@ -211,32 +221,27 @@ equipment, a handover) is at the end of that file.
 
 ## Security posture (short version)
 
-**This site keeps no submission record.** Quote inquiries and approved-driver
-onboarding are validated, checked and then delivered to Solidify by email.
-There is no database, no object store and no encryption-at-rest key, because
-there is nothing at rest. The email is the record.
+**This site keeps no submission record and collects no documents.** The three
+inquiry lanes are validated, checked and delivered to Solidify by email. There
+is no database, no object store and no encryption key, because there is nothing
+at rest. The email is the record.
 
-The onboarding wizard therefore holds its six steps and its three documents in
-browser memory until the applicant submits; everything travels in one multipart
-request. Preserved: origin checks that fail closed, double-submit CSRF, per-route
-rate limits, magic-byte sniffing with the declared type required to agree, no
-executable uploads, server-generated attachment filenames, an unconditional log
-redactor, masked secret fields that are never `type="password"`, nothing in
-`localStorage`/`sessionStorage`/IndexedDB, and `no-store` on every API response.
+Preserved: origin checks that fail closed, double-submit CSRF, per-route rate
+limits, an unconditional log redactor, nothing in
+`localStorage`/`sessionStorage`/IndexedDB, and `no-store` on every API
+response. **The only route to a 200 is a 2xx from the mail provider**; a
+refused delivery answers 502 and says plainly that nothing was saved. If
+delivery is not configured, every write returns 503 and the forms lock
+themselves — they never simulate success.
 
-**The only route to a 200 is a 2xx from the mail provider.** A refused delivery
-answers 502 and says plainly that nothing was saved; the applicant's answers and
-documents stay on the page so a retry costs nothing. **If delivery is not
-configured, every write returns 503 and the UI locks itself — it never simulates
-success.** Full contract: `lib/server/README.md`.
-
-Stated plainly, because it is a real change: moving the TIN/EIN, the bank
-routing and account numbers and the three documents into email removes
-at-rest encryption, key rotation, the retention purge and the masked reviewer
-read-back. This was the client's explicit requirement. The compensating
-controls are a dedicated `ONBOARDING_TO_EMAIL` mailbox with MFA and restricted
-membership, TLS required on the recipient domain, and a written procedure to
-move the details into payroll and delete the message.
+The owner-operator onboarding wizard — six steps, a W-9 with a taxpayer
+identification number, bank routing and account numbers, a voided check and
+insurance certificates — **has been removed at the client's request**, together
+with its API, its session cookie, its magic-byte upload checks and its access
+gate. There is no `input[type=file]` anywhere on this site and QA asserts it.
+Tax and payment details are handled with Solidify directly after approval.
+Full contract: `lib/server/README.md`; the removed subsystem is at commit
+`ba40867` if it is ever wanted back.
 
 ## What remains to configure for production
 
@@ -248,10 +253,6 @@ Copy `.env.example` to `.env.local` (or the host's environment) and set:
 | `RESEND_API_KEY` | Mail delivery. Without it nothing can be submitted at all |
 | `MAIL_FROM_EMAIL` | From address on a domain verified with the provider |
 | `INQUIRY_TO_EMAIL` | Where quote and dealership inquiries go |
-| `ONBOARDING_TO_EMAIL` | Where approved-driver onboarding goes. No fallback by design — it carries a TIN and bank details |
-| `ONBOARDING_ACCESS_CODE_HASHES` | SHA-256 hex of the access codes Solidify issues to approved operators |
-| `ONBOARDING_SESSION_SECRET` | Signs the onboarding session cookie (≥32 chars) |
-| `ONBOARDING_MAX_UPLOAD_BYTES`, `ONBOARDING_MAX_TOTAL_UPLOAD_BYTES` | Optional. Defaults (2 MiB / 3.5 MiB) are sized to the platform's 4.5 MB request cap |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Optional durable rate limiting across serverless instances |
 
 Until delivery is configured, `/api/health` reports the exact reasons — env
@@ -272,7 +273,7 @@ banned claims (including the retired weak copy and any geography comparative),
 non-repeating heading patterns, image reuse (max two slots per photograph),
 measured focal points, button sizing, unique titles/descriptions/canonicals,
 apply-CTA targets, mobile menu focus trapping, keyboard reachability, the
-quote form's honest outcome, the onboarding gate and storage hygiene,
+quote form's honest outcome, the application panel and storage hygiene,
 reduced-motion behaviour, and console/network cleanliness. Screenshots land in
 `qa/` (gitignored) — including mid-states of the pinned sections — for the
 visual review that DOM assertions cannot replace.

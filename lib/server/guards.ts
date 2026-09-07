@@ -2,7 +2,7 @@
  * Route-handler guards. Each returns a NextResponse to send, or null/value
  * to proceed. Order in every write chain:
  *
- *   configured → rate limit → csrf/origin → session → body
+ *   configured → rate limit → csrf/origin → body
  *
  * `fail()` is the single place an exception becomes an HTTP response. It
  * logs message + stack, never a body, and its client-facing messages say
@@ -16,7 +16,6 @@ import { getConfig } from "./config";
 import { isAppError } from "./errors";
 import { log } from "./log";
 import { clientIp, getRateLimiter, LIMITS, type LimitBucket } from "./ratelimit";
-import { readSession, type Session } from "./session";
 
 export const NO_STORE_HEADERS = {
   "Cache-Control": "no-store, no-cache, must-revalidate, private",
@@ -25,7 +24,7 @@ export const NO_STORE_HEADERS = {
 
 export const MESSAGES = {
   backendNotConfigured:
-    "Onboarding is not accepting submissions yet because delivery is not configured on this server. Nothing you enter here is saved or sent. Please contact Solidify Transport directly.",
+    "This form is not accepting submissions yet because delivery is not configured on this server. Nothing you enter here is saved or sent. Please contact Solidify Transport directly.",
   inquiryNotConfigured: "We could not receive your request online right now. Please call (510) 499-4552.",
   deliveryFailed:
     "We could not deliver your submission, so it was not accepted. Nothing was saved anywhere. Your answers and documents are still on this page — press submit again, or call (510) 499-4552.",
@@ -64,13 +63,10 @@ export function fail(err: unknown, where: string): NextResponse {
         log.error(`${where}: delivery failed`);
         return json({ error: "delivery_failed", message: MESSAGES.deliveryFailed }, { status: 502 });
       case "payload_too_large":
-        return json({ error: "payload_too_large", message: payloadTooLargeMessage() }, { status: 413 });
       case "file_too_large":
-        return json({ error: "file_too_large", message: fileTooLargeMessage() }, { status: 413 });
+        return json({ error: "payload_too_large", message: "That request is too large." }, { status: 413 });
       case "bad_json":
         return json({ error: "bad_json", message: "Request body must be JSON." }, { status: 400 });
-      case "bad_form":
-        return json({ error: "bad_form", message: "Request must be multipart form data with a file." }, { status: 400 });
       case "rate_limited":
         return json(
           { error: "rate_limited", message: MESSAGES.rateLimited, retryAfter: err.retryAfterSec ?? 60 },
@@ -86,28 +82,6 @@ export function fail(err: unknown, where: string): NextResponse {
   return json({ error: "server_error", message: MESSAGES.serverError }, { status: 500 });
 }
 
-const mb = (bytes: number) => {
-  const v = bytes / (1024 * 1024);
-  return Number.isInteger(v) ? String(v) : v.toFixed(1);
-};
-
-/** "Each document must be N MB or smaller." from the configured per-file cap. */
-export function fileTooLargeMessage(): string {
-  return `Each document must be ${mb(getConfig().maxUploadBytes)} MB or smaller.`;
-}
-
-/** "One submission can carry N MB." from the configured total budget. */
-export function payloadTooLargeMessage(): string {
-  return `One submission can carry ${mb(getConfig().maxTotalUploadBytes)} MB of documents in total.`;
-}
-
-/** 503 unless the onboarding pipeline is fully configured. */
-export function requireConfigured(): NextResponse | null {
-  const cfg = getConfig();
-  if (cfg.onboardingConfigured) return null;
-  log.warn("onboarding: request refused, not configured", { reasons: cfg.onboardingReasons });
-  return json({ error: "backend_not_configured", message: MESSAGES.backendNotConfigured }, { status: 503 });
-}
 
 /** 503 unless inquiries can be stored or mailed. */
 export function requireInquiryConfigured(): NextResponse | null {
@@ -134,11 +108,3 @@ export function limit(req: Request, bucket: LimitBucket): Promise<NextResponse |
   return withLimit(req, bucket, max, windowMs);
 }
 
-/** A verified session, or a 401 response. */
-export function requireSession(req: Request): Session | NextResponse {
-  const session = readSession(req);
-  if (!session) {
-    return json({ error: "no_session", message: "Your session expired. Enter your access code again." }, { status: 401 });
-  }
-  return session;
-}

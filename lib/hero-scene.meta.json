@@ -1,14 +1,14 @@
 {
-  "photo": "carrier-corvettes-highway",
+  "photo": "hauler-texas-road",
   "width": 512,
-  "height": 368,
+  "height": 318,
   "focal": [
     0.62,
-    0.56
+    0.54
   ],
   "vanish": [
-    -0.06,
-    0.66
+    0.06,
+    0.6
   ],
-  "horizon": 0.62
+  "horizon": 0.56
 }

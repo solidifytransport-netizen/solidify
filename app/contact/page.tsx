@@ -10,7 +10,6 @@ import { Plate } from "@/components/ui/Plate";
 import { LightSweep } from "@/components/ui/LightSweep";
 import { Button } from "@/components/ui/Button";
 import { Closing } from "@/components/layout/Closing";
-import { Field } from "@/components/webgl/Field";
 
 export const metadata: Metadata = pageMetadata({
   title: "Get a Quote — Contact Solidify Transport",
@@ -31,10 +30,9 @@ export default function ContactPage() {
 
       {/* compact typographic hero */}
       <section id="hero" data-section="hero" data-surface="deep" data-head="hero" aria-labelledby="hero-title" className="relative isolate overflow-hidden bg-[var(--surface)] text-[var(--text-hi)]">
-        <Field preset="dusk" intensity={0.42} maxDpr={1.05} />
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-50" />
         <div aria-hidden className="light-field opacity-35" />
-        <div className="shell relative z-10 flex flex-col gap-8 pb-[clamp(2.5rem,5vh,4rem)] pt-[calc(var(--nav-h)+4rem)]">
+        <div className="shell relative z-10 flex min-h-[70svh] flex-col justify-end gap-8 pb-[clamp(2.75rem,6vh,4.5rem)] pt-[calc(var(--nav-h)+5.5rem)]">
           <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
             <div className="flex flex-col gap-5 lg:col-span-7">
               <Reveal immediate delay={0.1} y={10}>
@@ -137,7 +135,7 @@ export default function ContactPage() {
                 n: "02",
                 mark: "Own your own truck",
                 title: "Owner-operators",
-                text: "For operators running their own Truck / Power Unit. Compensation, insurance requirements, the application, and secure onboarding once you are approved.",
+                text: "For operators running their own Truck / Power Unit. Compensation, insurance requirements, what the application asks for, and the application itself.",
                 href: "/owner-operators",
                 cta: "Go to owner-operators",
               },

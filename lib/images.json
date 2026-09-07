@@ -1,4 +1,19 @@
 {
+  "cab-texas-front": {
+    "width": 756,
+    "height": 724,
+    "aspect": 1.0442,
+    "widths": [
+      400,
+      640,
+      756
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
   "carrier-corvettes-highway": {
     "width": 2400,
     "height": 1725,
@@ -212,6 +227,73 @@
       900,
       1280,
       1430
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "deck-texas-load": {
+    "width": 988,
+    "height": 732,
+    "aspect": 1.3497,
+    "widths": [
+      400,
+      640,
+      900,
+      988
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "deck-texas-upper": {
+    "width": 1080,
+    "height": 554,
+    "aspect": 1.9495,
+    "widths": [
+      400,
+      640,
+      900,
+      1080
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "hauler-texas-front": {
+    "width": 1800,
+    "height": 1065,
+    "aspect": 1.6901,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
+  "hauler-texas-road": {
+    "width": 1900,
+    "height": 1180,
+    "aspect": 1.6102,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      1900
     ],
     "formats": [
       "avif",

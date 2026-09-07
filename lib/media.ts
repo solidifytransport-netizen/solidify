@@ -189,7 +189,45 @@ export const PHOTOS: Record<string, Photo> = {
     tone: "dark",
     source: "Unsplash NFz9uZ8CtKM - Koons Automotive (Virginia / Maryland)",
   },
-  "dealer-amg-detail": {
+  /* -- the rig itself: a loaded US auto hauler, on the road -------------- */
+
+  "hauler-texas-road": {
+    file: "hauler-texas-road",
+    alt: "A loaded auto-transport rig on the road at golden hour, cars stacked across both decks behind a conventional cab.",
+    focal: [62, 54],
+    tone: "light",
+    source: "Pixabay 6839728 - car transporter rig, Houston TX (Texas plate in frame; cropped)",
+  },
+  "hauler-texas-front": {
+    file: "hauler-texas-front",
+    alt: "A loaded auto-transport rig head-on on a highway, vehicles filling both decks of the trailer behind it.",
+    focal: [56, 58],
+    tone: "light",
+    source: "Pixabay 6839726 - car transporter rig, Houston TX (Texas plate in frame; cropped)",
+  },
+  "deck-texas-load": {
+    file: "deck-texas-load",
+    alt: "The upper and lower decks of a loaded car carrier, saloons and SUVs racked nose to tail between the uprights.",
+    focal: [52, 48],
+    tone: "light",
+    source: "Pixabay 6839728 - deck crop of the same frame",
+  },
+  "deck-texas-upper": {
+    file: "deck-texas-upper",
+    alt: "New vehicles standing on the upper deck of a car carrier, held on the steel rails above the cab.",
+    focal: [58, 50],
+    tone: "light",
+    source: "Pixabay 6839726 - upper-deck crop of the same frame",
+  },
+  "cab-texas-front": {
+    file: "cab-texas-front",
+    alt: "The chrome grille and lit headlamps of a conventional truck pulling a loaded car carrier.",
+    focal: [50, 56],
+    tone: "dark",
+    source: "Pixabay 6839726 - cab crop of the same frame",
+  },
+
+    "dealer-amg-detail": {
     file: "dealer-amg-detail",
     alt: "The rear quarter of a delivered performance saloon standing on a dealership lot, tail light and exhaust in close detail.",
     focal: [48, 34],
@@ -226,17 +264,17 @@ export const PHOTOS: Record<string, Photo> = {
 
 export const SLOTS = {
   /* Home */
-  "hero-carrier": { photo: "carrier-corvettes-highway", aspect: 16 / 9, tone: "dark", role: "HERO - the loaded carrier; the WebGL scene is built on this exact file." },
+  "hero-carrier": { photo: "hauler-texas-road", aspect: 16 / 9, tone: "dark", role: "HERO - the loaded rig; the WebGL scene is built on this exact file." },
   "lane-consumer": { photo: "deck-jeep-portrait", aspect: 4 / 5, tone: "dark", role: "Lanes - one customer vehicle, loaded and standing on the deck." },
   "lane-oem": { photo: "covers-column", aspect: 4 / 5, tone: "light", role: "Lanes - new-vehicle inventory under transit covers." },
-  "lane-operator": { photo: "corvette-upright", aspect: 4 / 5, tone: "dark", role: "Lanes - the loaded decks an owner-operator runs." },
-  statement: { photo: "carrier-deck-wide", aspect: 2, tone: "dark", role: "Statement - the loaded decks, full-bleed." },
-  "seq-pickup": { photo: "deck-strapped-sedan", aspect: 16 / 9, tone: "dark", role: "Sequence 01 - secured at pickup." },
-  "seq-transit": { photo: "carrier-deck-socal", aspect: 16 / 9, tone: "dark", role: "Sequence 02 - on the carrier." },
+  "lane-operator": { photo: "cab-texas-front", aspect: 4 / 5, tone: "dark", role: "Lanes - the truck an owner-operator runs." },
+  statement: { photo: "hauler-texas-front", aspect: 2, tone: "dark", role: "Statement - the loaded rig, full-bleed." },
+  "seq-pickup": { photo: "deck-strapped-sedan", aspect: 16 / 9, tone: "dark", role: "Sequence 01 - the vehicle going onto the deck." },
+  "seq-transit": { photo: "deck-texas-load", aspect: 16 / 9, tone: "dark", role: "Sequence 02 - loaded and moving." },
   "seq-delivery": { photo: "lot-dealer-row", aspect: 16 / 9, tone: "dark", role: "Sequence 03 - at the destination." },
   "home-oem": { photo: "lot-chattanooga-aerial", aspect: 16 / 11, tone: "light", role: "Home OEM feature - staged inventory from above." },
-  "home-sheet": { photo: "supra-deck-wide", aspect: 4 / 3, tone: "dark", role: "Carrier sheet - a vehicle on the deck, close." },
-  closing: { photo: "deck-socal-detail", aspect: 16 / 9, tone: "dark", role: "Closing scene - vehicles standing on the deck." },
+  "home-sheet": { photo: "deck-texas-upper", aspect: 4 / 3, tone: "dark", role: "Carrier sheet - the upper deck, close." },
+  closing: { photo: "carrier-deck-wide", aspect: 16 / 9, tone: "dark", role: "Closing scene - the loaded decks." },
 
   /* Car shipping */
   "cs-hero": { photo: "carrier-deck-wide", aspect: 16 / 9, tone: "dark", role: "Car-shipping hero - the loaded decks." },
@@ -254,24 +292,24 @@ export const SLOTS = {
   "oem-board": { photo: "lot-covers-detail", aspect: 16 / 9, tone: "dark", role: "Movement board backdrop - inventory depth behind the network." },
 
   /* Owner-operators */
-  "oo-hero": { photo: "carrier-corvettes-highway", aspect: 16 / 9, tone: "dark", role: "Owner-operator hero - the loaded carrier." },
+  "oo-hero": { photo: "hauler-texas-front", aspect: 16 / 9, tone: "dark", role: "Owner-operator hero - the rig, head-on." },
   "road-1": { photo: "deck-ramp-detail", aspect: 16 / 10, tone: "light", role: "Road 01 - the decks and ramps you run." },
   "road-2": { photo: "deck-aerial-yard", aspect: 16 / 10, tone: "light", role: "Road 03 - the trailer you run, end to end." },
-  "oo-apply": { photo: "deck-corvette-detail", aspect: 4 / 5, tone: "dark", role: "Application panel - the load waiting on the deck." },
+  "oo-apply": { photo: "carrier-corvettes-highway", aspect: 4 / 3, tone: "dark", role: "Application panel - a loaded deck on the road." },
   "oo-closing": { photo: "carrier-deck-socal", aspect: 16 / 9, tone: "dark", role: "Owner-operator closing - a loaded deck against open sky." },
 
   /* Become a driver */
-  "driver-hero": { photo: "deck-socal-detail", aspect: 16 / 9, tone: "dark", role: "Driver hero - a vehicle standing on the deck." },
+  "driver-hero": { photo: "hauler-texas-road", aspect: 16 / 9, tone: "dark", role: "Driver hero - the rig you would drive." },
   "driver-work-1": { photo: "ramp-upright", aspect: 4 / 5, tone: "light", role: "The work 01 - the ramps and decks you operate." },
   "driver-work-2": { photo: "strap-wheel-detail", aspect: 4 / 5, tone: "dark", role: "The work 02 - the tie-down that holds a vehicle." },
   "driver-work-3": { photo: "covers-column", aspect: 4 / 5, tone: "light", role: "The work 03 - new vehicles, where condition is the job." },
   "driver-work-4": { photo: "lot-dealer-row", aspect: 4 / 5, tone: "dark", role: "The work 04 - the destination you deliver to." },
-  "driver-console": { photo: "dealer-amg-detail", aspect: 4 / 5, tone: "dark", role: "Driver console rail - a delivered vehicle, dimmed behind the form." },
-  "driver-closing": { photo: "supra-deck-wide", aspect: 16 / 9, tone: "dark", role: "Driver closing - the load on the deck." },
+  "driver-console": { photo: "cab-texas-front", aspect: 4 / 5, tone: "dark", role: "Driver console rail - the cab, dimmed behind the form." },
+  "driver-closing": { photo: "deck-texas-upper", aspect: 16 / 9, tone: "dark", role: "Driver closing - the load you carry." },
 
   /* About */
-  "about-hero": { photo: "supra-trailer-straps", aspect: 16 / 10, tone: "dark", role: "About hero - a vehicle secured for transport." },
-  "about-identity": { photo: "corvette-upright", aspect: 4 / 5, tone: "light", role: "Identity plate - the loaded decks, upright." },
+  "about-hero": { photo: "deck-texas-load", aspect: 16 / 10, tone: "dark", role: "About hero - vehicles are the whole business." },
+  "about-identity": { photo: "supra-trailer-straps", aspect: 4 / 5, tone: "dark", role: "Identity plate - a vehicle secured for transport." },
 
   /* Contact */
   "contact-rail": { photo: "carrier-interstate-transit", aspect: 4 / 5, tone: "dark", role: "Contact console rail - the carrier in transit, heavily dimmed." },

@@ -98,18 +98,10 @@ export function Situations() {
             const p = self.progress;
             gsap.set(track, { x: -p * distance() });
             if (fill) fill.style.transform = `scaleX(${p})`;
-            // The card crossing the reading line (38% of the viewport) wins.
-            const line = window.innerWidth * 0.38;
-            let best = 0;
-            let bestD = Infinity;
-            gsap.utils.toArray<HTMLElement>("[data-sit]", track).forEach((c, i) => {
-              const r = c.getBoundingClientRect();
-              const d = Math.abs(r.left + r.width / 2 - line);
-              if (d < bestD) {
-                bestD = d;
-                best = i;
-              }
-            });
+            /* Active comes from progress, not from whichever panel happens to
+               be nearest a fixed reading line. The line version made panel 02
+               active at progress 0 — the section opened already scrolled. */
+            const best = Math.round(p * (PANELS.length - 1));
             if (best !== activeRef.current) {
               activeRef.current = best;
               setActive(best);
@@ -143,7 +135,7 @@ export function Situations() {
   );
 
   return (
-    <Section surface="navy" id="situations" ariaLabelledBy="situations-title" head="editorial" flush className="overflow-clip" field="transit" fieldIntensity={0.75}>
+    <Section surface="navy" id="situations" ariaLabelledBy="situations-title" head="editorial" flush className="overflow-clip">
       <div ref={root} className="relative flex min-h-[100svh] flex-col justify-center gap-10 py-[clamp(4rem,8vh,6rem)] lg:gap-12">
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-40" />
 

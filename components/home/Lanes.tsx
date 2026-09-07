@@ -9,6 +9,7 @@ import { Plate } from "@/components/ui/Plate";
 import { RevealText, Reveal } from "@/components/ui/Reveal";
 import { Section, SectionMark, Lines } from "@/components/ui/Primitives";
 import { LightSweep } from "@/components/ui/LightSweep";
+import { useTilt } from "@/components/ui/Tilt";
 import { HOME } from "@/lib/content/home";
 
 type Item = (typeof HOME.lanes.items)[number];
@@ -138,8 +139,14 @@ export function Lanes() {
 }
 
 function Lane({ item, i, onEnter }: { item: Item; i: number; onEnter: () => void }) {
+  const card = useRef<HTMLElement>(null);
+  /* The Flip transition owns flex-basis; the tilt owns rotation and z, so the
+     two never write the same property. */
+  useTilt(card, { max: 5, lift: 18 });
+
   return (
     <article
+      ref={card}
       role="listitem"
       data-lane
       data-active="false"

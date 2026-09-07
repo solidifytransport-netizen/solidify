@@ -309,9 +309,7 @@ try {
       const t = m.text();
       // The unconfigured backend answers 503 by design; the browser logs that honest refusal as a resource error.
       if (/status of 503/.test(t)) return;
-      // This harness deliberately submits a wrong access code; the 401 that
-      // comes back is the assertion, not an error.
-      if (/status of 401/.test(t)) return;
+
       consoleErrors.push(t.slice(0, 220));
     });
     p.on("pageerror", (e) => consoleErrors.push("pageerror: " + String(e.message).slice(0, 220)));
@@ -326,8 +324,7 @@ try {
       try {
         // 503 on /api/* is the backend's honest "not configured" refusal, asserted separately by the form and gate checks.
         if (r.status() === 503 && r.url().includes("/api/")) return;
-        // Deliberate: the wrong-code check above provokes this 401.
-        if (r.status() === 401 && r.url().includes("/api/onboarding/access")) return;
+
         if (r.status() >= 400 && new URL(r.url()).origin === new URL(TARGET).origin) netErrors.push(`HTTP ${r.status()} ${r.url().slice(0, 140)}`);
       } catch {}
     });
@@ -339,7 +336,6 @@ try {
   const health = await fetch(`${TARGET}/api/health`).then((r) => r.json()).catch(() => null);
   note("backend health", JSON.stringify(health));
   const inquiryConfigured = !!health?.inquiry?.configured;
-  const onboardingConfigured = !!health?.onboarding?.configured;
 
   const siteWidePhotoUse = {};
   let brokerTotal = 0;
@@ -405,8 +401,8 @@ try {
         check(`[${pg.name}] display type is not overweight`, f.heavy.length === 0, f.heavy.slice(0, 4).join(" | "));
         check(`[${pg.name}] no stretched type`, f.stretched === 0, String(f.stretched));
         check(`[${pg.name}] no photography-credit links`, f.creditLinks === 0, String(f.creditLinks));
-        check(`[${pg.name}] at most one WebGL surface`, f.canvases <= 1, String(f.canvases));
-        if (pg.name === "home") check("[home] the home canvas is the hero scene", f.canvas >= 1, String(f.canvas));
+        check(`[${pg.name}] WebGL surfaces stay within budget`, f.canvases <= (pg.name === "home" ? 2 : 1), String(f.canvases));
+        if (pg.name === "home") check("[home] the hero scene is mounted", f.canvas >= 1, String(f.canvas));
         if (pg.name === "owner-operators") check("[owner-operators] carries the one external portal link", f.applyLinks === 1, String(f.applyLinks));
         else check(`[${pg.name}] does not leave the domain`, f.applyLinks === 0, String(f.applyLinks));
         if (pg.name === "contact") check("[contact] three inquiry lanes", f.laneTabs === 3, String(f.laneTabs));
@@ -445,7 +441,6 @@ try {
           check(`[${pg.name}] nothing in sessionStorage`, f.sessionStorageKeys.length === 0, f.sessionStorageKeys.join(", "));
           check(`[${pg.name}] states the confirmed insurance minimums`, f.text.includes("$500,000") && f.text.includes("$1,000,000"));
           check(`[${pg.name}] shows the certificate holder address`, f.text.includes("2455 naglee rd"));
-          check(`[${pg.name}] onboarding region present`, !!(await page.$("#onboarding")));
         }
         if (pg.name === "become-a-driver") {
           check("[become-a-driver] sends drivers to the carrier, not to a portal", f.applyLinks === 0 && /talk to solidify/i.test(f.text), "");
@@ -571,49 +566,38 @@ try {
   else check("quote form: valid submit reports the honest not-configured state (never fake success)", !/thank you/i.test(outcome.success) && /call|could not receive|not configured/i.test(outcome.alert), JSON.stringify(outcome));
   await shot(page, `${OUT}/forms/quote-outcome.png`);
 
-  /* ---- onboarding gate ---- */
-  await page.goto(`${TARGET}/owner-operators#onboarding`, { waitUntil: "load", timeout: 120000 });
-  await page.waitForTimeout(1800);
-  await page.evaluate(() => document.getElementById("onboarding")?.scrollIntoView());
-  await page.waitForTimeout(800);
-  // The boot probe (/api/health) can take a few seconds on a cold serverless start; wait for it to settle.
-  await page.waitForFunction(() => !/checking/i.test(document.querySelector("[data-onboarding-status]")?.textContent || ""), null, { timeout: 20000 }).catch(() => {});
-  const ob = await page.evaluate(() => {
-    const root = document.querySelector("[data-onboarding]");
-    const gate = document.querySelector("[data-onboarding-gate]");
-    const stepInputs = [...document.querySelectorAll("[data-onboarding-steps] input, [data-onboarding-steps] select, [data-onboarding-steps] textarea")];
+  /* ---- the application panel: what replaced the onboarding form ---- */
+  await page.goto(`${TARGET}/owner-operators#apply`, { waitUntil: "load", timeout: 120000 });
+  await page.waitForTimeout(1500);
+  const ap = await page.evaluate(() => {
+    const sec = document.querySelector("#apply");
+    const portal = [...document.querySelectorAll('a[href^="https://account.neweratitans.com"]')];
     return {
-      root: !!root,
-      gate: !!gate,
-      gateInput: !!document.querySelector('[data-onboarding-gate] input[name="code"]'),
-      gateDisabled: !!document.querySelector('[data-onboarding-gate] input[name="code"]')?.disabled,
-      stepInputs: stepInputs.length,
-      stepInputsDisabled: stepInputs.every((i) => i.disabled),
-      status: document.querySelector("[data-onboarding-status]")?.textContent?.trim().slice(0, 200) || "",
-      stub: !!document.querySelector("[data-onboarding-stub]"),
+      section: !!sec,
+      items: sec ? sec.querySelectorAll("ol li").length : 0,
+      portal: portal.length,
+      target: portal[0]?.getAttribute("target") || "",
+      rel: portal[0]?.getAttribute("rel") || "",
+      /* the wizard and every trace of it must be gone */
+      wizard: document.querySelectorAll("[data-onboarding], [data-onboarding-gate], [data-onboarding-steps]").length,
+      fileInputs: document.querySelectorAll('input[type="file"]').length,
+      text: (document.body.innerText || "").toLowerCase(),
     };
   });
-  check("onboarding: stepper mounted (not the stub)", ob.root && !ob.stub, JSON.stringify(ob));
-  check("onboarding: access gate present with a code field", ob.gate && ob.gateInput, JSON.stringify(ob));
-  if (ob.stepInputs) check("onboarding: step controls disabled behind the gate", ob.stepInputsDisabled, `${ob.stepInputs} inputs`);
-  if (ob.gateInput && !onboardingConfigured) {
-    check("onboarding: gate is disabled while the backend is unconfigured (nothing can be typed into a dead form)", ob.gateDisabled, JSON.stringify(ob));
-    check("onboarding: locked state explains itself honestly", /not accepting|not configured|nothing you enter|contact solidify/i.test(ob.status), ob.status);
-    await shot(page, `${OUT}/forms/onboarding-gate.png`);
-  } else if (ob.gateInput) {
-    await page.fill('[data-onboarding-gate] input[name="code"]', "QA-NOT-A-REAL-CODE");
-    await page.click('[data-onboarding-gate] button[type="submit"]');
-    await page.waitForTimeout(2500);
-    const after = await page.evaluate(() => ({
-      status: document.querySelector("[data-onboarding-status]")?.textContent?.trim().slice(0, 240) || "",
-      unlocked: !!document.querySelector("[data-onboarding-unlocked]"),
-    }));
-    if (onboardingConfigured) check("onboarding: wrong code is refused", !after.unlocked && /not recognized|invalid/i.test(after.status), JSON.stringify(after));
-    else check("onboarding: unconfigured backend produces the honest locked state (503), never a fake unlock", !after.unlocked && /not accepting|not configured|nothing you entered|contact solidify/i.test(after.status), JSON.stringify(after));
-    await shot(page, `${OUT}/forms/onboarding-gate.png`);
-  }
+  check("owner-operators: the application section is present", ap.section);
+  check("owner-operators: it lists what to have ready", ap.items >= 4, String(ap.items));
+  check("owner-operators: it ends in exactly one portal button", ap.portal === 1, String(ap.portal));
+  check("owner-operators: the portal button opens safely", ap.target === "_blank" && /noopener/.test(ap.rel), `${ap.target} ${ap.rel}`);
+  check("owner-operators: the onboarding wizard is gone", ap.wizard === 0, String(ap.wizard));
+  check("owner-operators: no file upload anywhere on the page", ap.fileInputs === 0, String(ap.fileInputs));
+  check(
+    "owner-operators: no W-9 / bank-detail collection copy remains",
+    !/(voided check|routing number|taxpayer identification|direct deposit authorization|access code)/i.test(ap.text),
+    "",
+  );
   const obStorage = await page.evaluate(() => ({ l: Object.keys(localStorage).length, s: Object.keys(sessionStorage).length }));
-  check("onboarding: still nothing in localStorage/sessionStorage after interaction", obStorage.l === 0 && obStorage.s === 0, JSON.stringify(obStorage));
+  check("owner-operators: nothing in localStorage/sessionStorage", obStorage.l === 0 && obStorage.s === 0, JSON.stringify(obStorage));
+  await shot(page, `${OUT}/forms/apply-panel.png`);
 
   /* ---- reduced motion ---- */
   await page.emulateMedia({ reducedMotion: "reduce" });

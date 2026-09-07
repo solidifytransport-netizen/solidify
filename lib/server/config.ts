@@ -11,7 +11,7 @@
  *
  * This site keeps no submission record: there is no object store, no database
  * and no encryption-at-rest key here, because there is nothing at rest. What
- * configuration remains is what it takes to gate onboarding and to deliver a
+ * configuration remains is what it takes to deliver a
  * submission to Solidify.
  */
 
@@ -24,17 +24,11 @@ export interface ServerConfig {
   /** Every origin a same-site POST may come from. */
   allowedOrigins: string[];
 
-  /** sha256 hex digests of the access codes that unlock onboarding. */
-  accessCodeHashes: string[];
-  sessionSecret: string | null;
 
   /** Per document, after any client-side reduction. */
-  maxUploadBytes: number;
   /** Every document in one submission, added together. */
-  maxTotalUploadBytes: number;
 
   inquiryToEmail: string | null;
-  onboardingToEmail: string | null;
   mailFromEmail: string;
   resendApiKey: string | null;
   /** Non-production only: point the mailer at a local sink for tests. */
@@ -43,8 +37,6 @@ export interface ServerConfig {
 
   upstash: { url: string; token: string } | null;
 
-  onboardingConfigured: boolean;
-  onboardingReasons: string[];
   inquiryConfigured: boolean;
   inquiryReasons: string[];
 }
@@ -115,43 +107,12 @@ function build(): ServerConfig {
   }
   const allowedOrigins = [...allowed];
 
-  /* ── the onboarding gate ─────────────────────────────────────────────── */
-  const accessReasons: string[] = [];
-  const accessCodeHashes: string[] = [];
-  const rawHashes = env("ONBOARDING_ACCESS_CODE_HASHES");
-  if (rawHashes === null) {
-    accessReasons.push("ONBOARDING_ACCESS_CODE_HASHES is not set");
-  } else {
-    let bad = 0;
-    for (const h of rawHashes.split(",")) {
-      const t = h.trim().toLowerCase();
-      if (t === "") continue;
-      if (/^[0-9a-f]{64}$/.test(t)) accessCodeHashes.push(t);
-      else bad += 1;
-    }
-    if (bad > 0) accessReasons.push(`ONBOARDING_ACCESS_CODE_HASHES has ${bad} entr${bad === 1 ? "y" : "ies"} that are not sha256 hex`);
-    if (accessCodeHashes.length === 0) accessReasons.push("ONBOARDING_ACCESS_CODE_HASHES contains no valid sha256 hex digest");
-  }
-
-  const rawSecret = env("ONBOARDING_SESSION_SECRET");
-  if (rawSecret === null) accessReasons.push("ONBOARDING_SESSION_SECRET is not set");
-  else if (rawSecret.length < MIN_SESSION_SECRET_CHARS) accessReasons.push(`ONBOARDING_SESSION_SECRET must be at least ${MIN_SESSION_SECRET_CHARS} characters`);
-  const sessionSecret = rawSecret !== null && rawSecret.length >= MIN_SESSION_SECRET_CHARS ? rawSecret : null;
-
-  /* ── limits ──────────────────────────────────────────────────────────── */
-  const limitReasons: string[] = [];
-  const maxUploadBytes = intEnv("ONBOARDING_MAX_UPLOAD_BYTES", DEFAULT_MAX_UPLOAD_BYTES, limitReasons);
-  const maxTotalUploadBytes = intEnv("ONBOARDING_MAX_TOTAL_UPLOAD_BYTES", DEFAULT_MAX_TOTAL_UPLOAD_BYTES, limitReasons);
-
   /* ── delivery ────────────────────────────────────────────────────────── */
   const mailReasons: string[] = [];
   const resendApiKey = env("RESEND_API_KEY");
   if (resendApiKey === null) mailReasons.push("RESEND_API_KEY is not set");
-
   const inquiryToEmail = env("INQUIRY_TO_EMAIL");
-  // Deliberately no fallback to INQUIRY_TO_EMAIL: a taxpayer identification
-  // number and a bank account must land in a mailbox chosen on purpose.
-  const onboardingToEmail = env("ONBOARDING_TO_EMAIL");
+
   const mailFromEmail = env("MAIL_FROM_EMAIL") ?? env("INQUIRY_FROM_EMAIL") ?? DEFAULT_FROM;
   if (!looksLikeEmail(mailFromEmail)) mailReasons.push("MAIL_FROM_EMAIL must be a valid address");
   const mailConfigured = resendApiKey !== null && looksLikeEmail(mailFromEmail);
@@ -166,10 +127,6 @@ function build(): ServerConfig {
   /* ── verdicts ────────────────────────────────────────────────────────── */
   const originReasons = allowedOrigins.length === 0 ? ["no allowed origin: set NEXT_PUBLIC_SITE_URL to the public https origin"] : [];
 
-  const onboardingConfigured = mailConfigured && onboardingToEmail !== null && sessionSecret !== null && accessCodeHashes.length > 0 && allowedOrigins.length > 0;
-  const onboardingReasons = onboardingConfigured
-    ? []
-    : [...mailReasons, ...(onboardingToEmail === null ? ["ONBOARDING_TO_EMAIL is not set"] : []), ...accessReasons, ...originReasons, ...limitReasons];
 
   const inquiryConfigured = mailConfigured && inquiryToEmail !== null && allowedOrigins.length > 0;
   const inquiryReasons = inquiryConfigured ? [] : [...mailReasons, ...(inquiryToEmail === null ? ["INQUIRY_TO_EMAIL is not set"] : []), ...originReasons];
@@ -179,19 +136,12 @@ function build(): ServerConfig {
     isProd,
     siteOrigin,
     allowedOrigins,
-    accessCodeHashes,
-    sessionSecret,
-    maxUploadBytes,
-    maxTotalUploadBytes,
     inquiryToEmail,
-    onboardingToEmail,
     mailFromEmail,
     resendApiKey,
     resendApiBase,
     mailConfigured,
     upstash,
-    onboardingConfigured,
-    onboardingReasons,
     inquiryConfigured,
     inquiryReasons,
   };

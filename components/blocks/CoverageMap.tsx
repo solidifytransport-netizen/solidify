@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useGSAP } from "@gsap/react";
 import clsx from "clsx";
 import { gsap, EASE } from "@/lib/motion";
@@ -9,6 +10,10 @@ import { STATE_NAMES } from "@/lib/schemas";
 import map from "@/lib/us-map.json";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
 import { Section, Eyebrow, SectionMark, type Surface } from "@/components/ui/Primitives";
+
+/* three.js only loads on a route that actually shows the board, and only in
+   the browser. The SVG below is the fallback and stays in the DOM. */
+const CoverageScene = dynamic(() => import("@/components/webgl/CoverageScene").then((m) => m.CoverageScene), { ssr: false });
 
 type St = { id: string; abbr: string; name: string; d: string; cx: number; cy: number };
 const STATES = (map as { viewBox: string; states: St[] }).states;
@@ -39,6 +44,8 @@ export function CoverageMap({
   const root = useRef<HTMLDivElement>(null);
   const light = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<St | null>(null);
+  const [gl, setGl] = useState(false);
+  const byAbbr = (a: string | null) => (a ? (STATES.find((s) => s.abbr === a) ?? null) : null);
 
   useGSAP(
     () => {
@@ -114,7 +121,25 @@ export function CoverageMap({
         <div ref={root} onPointerMove={onMove} className="relative lg:col-span-7">
           <div aria-hidden className="pointer-events-none absolute -inset-[10%] -z-10 rounded-full blur-3xl [background:radial-gradient(closest-side,rgba(26,63,112,0.55),transparent_70%)]" />
           <div ref={light} aria-hidden className="pointer-events-none absolute inset-0 -z-[5] transition-[background] duration-300" />
-          <svg viewBox={VIEWBOX} className="w-full" aria-hidden onPointerLeave={() => setHover(null)}>
+
+          {/* The board in three dimensions. It sits over the SVG, which keeps
+              its box (and therefore this column's height) and comes back the
+              moment the scene bails out. */}
+          <CoverageScene
+            states={STATES}
+            focus={FOCUS_STATES}
+            hovered={hover?.abbr ?? null}
+            onHover={(a) => setHover(byAbbr(a))}
+            onReady={setGl}
+            className="absolute inset-0 z-[1]"
+          />
+
+          <svg
+            viewBox={VIEWBOX}
+            className={clsx("w-full transition-opacity duration-700", gl && "pointer-events-none opacity-0")}
+            aria-hidden
+            onPointerLeave={() => setHover(null)}
+          >
             <defs>
               <radialGradient id="west-glow" cx="22%" cy="45%" r="42%">
                 <stop offset="0%" stopColor="#4f97ff" stopOpacity="0.5" />
@@ -160,7 +185,7 @@ export function CoverageMap({
             ))}
           </svg>
 
-          <div className="plate plate-steel absolute bottom-3 right-3 flex min-w-[230px] flex-col gap-1 px-4 py-3" aria-live="polite">
+          <div className="plate plate-steel absolute bottom-3 right-3 z-[2] flex min-w-[230px] flex-col gap-1 px-4 py-3" aria-live="polite">
             <span className="label">{hover ? (WEST.has(hover.abbr) ? "Western focus" : "Coverage") : "Coverage"}</span>
             <span className="font-display text-[var(--step-1)] font-medium leading-tight">{hover ? hover.name : "48 contiguous states"}</span>
             <span className="small !text-[var(--text-low)]">{hover ? (WEST.has(hover.abbr) ? "Western focus" : "Served") : "Strong Western-US coverage"}</span>

@@ -86,7 +86,7 @@ export function PageHero({
       data-surface="deep"
       data-head="hero"
       aria-labelledby={`${id}-title`}
-      className={clsx("relative isolate flex flex-col justify-end overflow-hidden bg-[var(--surface)] text-[var(--text-hi)]", compact ? "min-h-[62svh]" : "min-h-[84svh]")}
+      className={clsx("relative isolate flex flex-col justify-end overflow-hidden bg-[var(--surface)] text-[var(--text-hi)]", compact ? "min-h-[74svh]" : "min-h-[94svh]")}
     >
       <div className="absolute inset-0 -z-10">
         <div data-hero-mask className="absolute inset-0" style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)" }}>
@@ -102,7 +102,7 @@ export function PageHero({
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-50" />
       </div>
 
-      <div className="shell relative z-10 flex flex-col gap-10 pb-[clamp(2.25rem,5vh,4rem)] pt-[calc(var(--nav-h)+4.5rem)]">
+      <div className="shell relative z-10 flex flex-col gap-10 pb-[clamp(2.75rem,6vh,4.5rem)] pt-[calc(var(--nav-h)+6rem)]">
         <div className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-10">
           <div className="flex flex-col gap-5 lg:col-span-7">
             <Reveal immediate delay={0.15} y={10}>

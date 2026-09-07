@@ -16,8 +16,6 @@
     "imagery:derive": "node scripts/derive.mjs",
     "shaders": "node scripts/shader-preview.mjs",
     "qa": "node scripts/qa.mjs",
-    "onboarding:smoke": "node scripts/onboarding-smoke.mjs",
-    "onboarding:ui": "node scripts/onboarding-ui.mjs",
     "env:local": "node scripts/local-env.mjs",
     "mail:sink": "node scripts/mail-sink.mjs"
   },

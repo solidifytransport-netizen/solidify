@@ -105,7 +105,7 @@ export function Road({ id = "road" }: { id?: string }) {
             </div>
             <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-6 lg:p-8">
               <h3 className="display-sm max-w-[14ch]">A car hauler's decks and ramps, from above.</h3>
-              <p className="body max-w-[44ch] !text-[rgba(242,245,249,0.85)]">Your Truck / Power Unit and trailer are recorded by VIN, make, model, year and capacity during onboarding.</p>
+              <p className="body max-w-[44ch] !text-[rgba(242,245,249,0.85)]">Your Truck / Power Unit and trailer are identified by VIN, make, model, year and capacity when you apply.</p>
             </div>
           </Frame>
 

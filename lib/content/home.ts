@@ -135,7 +135,7 @@ export const HOME = {
     mark: { index: 6, label: "Coverage" },
     eyebrow: "Coverage",
     title: "All 48 contiguous states. Strong Western-US focus.",
-    lead: "Solidify moves vehicles across the contiguous United States, with strong Western-US coverage — California, Oregon, Washington, Nevada, Arizona, Utah, Idaho, Montana, Wyoming, Colorado and New Mexico.",
+    lead: "Solidify moves vehicles across the contiguous United States, with strong Western-US coverage — California, Oregon, Washington, Nevada, Arizona, Utah, Idaho, Montana, Wyoming, Colorado, New Mexico and Texas.",
   },
 
   sheet: {
@@ -155,7 +155,7 @@ export const HOME = {
   operator: {
     mark: { index: 8, label: "Owner-operators" },
     title: ["Run your Truck / Power Unit", "with an auto transport carrier."],
-    lead: `${COMPENSATION.basis} Payment terms are ${COMPENSATION.terms}. Apply through our driver portal, and once approved, complete onboarding securely online.`,
+    lead: `${COMPENSATION.basis} Payment terms are ${COMPENSATION.terms}. See what the application asks for, then apply through the driver application portal.`,
     specs: [
       { label: "Compensation", value: COMPENSATION.basisShort },
       { label: "Payment terms", value: COMPENSATION.terms },

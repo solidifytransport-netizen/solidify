@@ -495,3 +495,37 @@ slot map in lib/media.ts now puts the strongest frames where they are seen most
 and the documentary ones where the layout wants ground rather than subject.
 
 The shoot brief in this file stands, and is the only real fix.
+
+FIFTH sweep (this revision) - the ceiling finally broke
+--------------------------------------------------------
+Pixabay had never been tried. It carries the exact frame the client sent as a
+reference: a loaded auto-transport rig photographed in Houston, Texas, with a
+Texas plate (R52-0240) legible in frame, under the Pixabay Content Licence.
+
+  hauler-texas-road   <- pixabay 6839728 (three-quarter, golden hour)
+  hauler-texas-front  <- pixabay 6839726 (head-on, same rig, same shoot)
+
+  deck-texas-load     <- hauler-texas-road  (the loaded decks)
+  deck-texas-upper    <- hauler-texas-front (the upper deck)
+  cab-texas-front     <- hauler-texas-front (grille, headlamps, plate)
+
+ORIGIN: positively established. Texas plate readable in both frames; the
+photographer's own note places the rig in Houston, TX.
+
+LIVERY: the cab door carries a small three-line operator/USDOT panel. It is
+UNRESOLVABLE - Pixabay serves 1280px without an account, so the published
+ladder tops out below the width at which those characters could ever be read,
+and the derived crops exclude the door entirely. This is the difference from
+unsplash q36Yp9RpHa0, rejected earlier in this project: there the door read
+"S3 TRANSPORT, NEW BOSTON MI, USDOT 3283969, MC 1042307" cleanly at 2x on a
+4000px source. A panel that cannot be resolved at any served size does not put
+another carrier's identity on this website.
+
+RESOLUTION, stated plainly: 1280px is the largest free size, so the two full
+frames were cropped and then upscaled (lanczos3 + unsharp) to 1900 and 1800
+wide. They sit under a dark grade, scrims and the WebGL hero treatment, which
+is where that holds up. If the client can supply the 6000x4000 original - or
+their own photography - it drops straight into assets/media under the same
+names and everything downstream regenerates.
+
+The shoot brief in this file still stands and is still the real fix.

@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import clsx from "clsx";
 import { COMPANY, APPLY_URL } from "@/lib/site";
-import { Field, type FieldPreset } from "@/components/webgl/Field";
 
 export type Surface = "deep" | "navy" | "graphite" | "gunmetal" | "steel" | "ice";
 
@@ -16,8 +15,6 @@ export function Section({
   as: Tag = "section",
   ariaLabelledBy,
   head,
-  field,
-  fieldIntensity = 0.9,
 }: {
   children: ReactNode;
   surface?: Surface;
@@ -29,14 +26,6 @@ export function Section({
   ariaLabelledBy?: string;
   /** Which heading pattern this section uses — QA asserts neighbours differ. */
   head?: HeadPattern;
-  /**
-   * An ambient shader surface behind this section's content. AT MOST ONE per
-   * route (QA asserts it), and never on a route carrying the hero scene.
-   * Only for sections that are not themselves a full-bleed photograph — under
-   * one it is invisible, over one it fogs the image.
-   */
-  field?: FieldPreset;
-  fieldIntensity?: number;
 }) {
   return (
     <Tag
@@ -47,7 +36,6 @@ export function Section({
       aria-labelledby={ariaLabelledBy}
       className={clsx("section", tight && "section-tight", flush && "section-flush", className)}
     >
-      {field && <Field preset={field} intensity={fieldIntensity} maxDpr={1.1} />}
       {children}
     </Tag>
   );

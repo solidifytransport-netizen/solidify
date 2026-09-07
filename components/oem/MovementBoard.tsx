@@ -7,7 +7,6 @@ import { gsap, EASE, MQ } from "@/lib/motion";
 import { Plate } from "@/components/ui/Plate";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
 import { Section, SectionMark, Lines, SpecStrip, type Surface } from "@/components/ui/Primitives";
-import { Field } from "@/components/webgl/Field";
 import { Button } from "@/components/ui/Button";
 import type { MediaId } from "@/lib/media";
 
@@ -162,11 +161,6 @@ export function MovementBoard({
 
   return (
     <Section surface={surface} id={id} ariaLabelledBy={`${id}-title`} head="editorial" className="overflow-clip">
-      {/* The route's one shader surface sits here rather than on the hero:
-          this is the section whose subject IS a network, and a lit node field
-          behind it reads as movement between points rather than as decoration
-          on a headline. */}
-      <Field preset="network" intensity={1.05} maxDpr={1.1} />
       {backdrop && (
         <div className="absolute inset-0 -z-10 opacity-[0.22]">
           <Plate slot={backdrop} sizes="100vw" aspect="fill" parallax={14} reveal={false} grade="deep" dim={0.7} className="!absolute inset-0 h-full w-full" />

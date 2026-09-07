@@ -6,7 +6,6 @@ import { Editorial } from "@/components/ui/Editorial";
 import { Plate } from "@/components/ui/Plate";
 import { CoverageMap } from "@/components/blocks/CoverageMap";
 import { Closing } from "@/components/layout/Closing";
-import { Field } from "@/components/webgl/Field";
 import { Button } from "@/components/ui/Button";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
 import { SectionMark, PhoneLink, Lines } from "@/components/ui/Primitives";
@@ -44,10 +43,9 @@ export default function AboutPage() {
 
       {/* Hero: the hauler, drawn */}
       <section id="hero" data-section="hero" data-surface="deep" data-head="hero" aria-labelledby="hero-title" className="relative isolate overflow-hidden bg-[var(--surface)] text-[var(--text-hi)]">
-        <Field preset="dusk" intensity={0.7} maxDpr={1.1} />
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-50" />
         <div aria-hidden className="light-field opacity-40" />
-        <div className="shell relative z-10 flex min-h-[84svh] flex-col justify-end gap-10 pb-[clamp(2.5rem,6vh,4.5rem)] pt-[calc(var(--nav-h)+4rem)]">
+        <div className="shell relative z-10 flex min-h-[94svh] flex-col justify-end gap-10 pb-[clamp(2.75rem,6vh,4.5rem)] pt-[calc(var(--nav-h)+5.5rem)]">
           <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
             <div className="flex flex-col gap-6 lg:col-span-6">
               <Reveal immediate delay={0.1} y={10}>
@@ -115,7 +113,7 @@ export default function AboutPage() {
 
       <Editorial id="who" layout="ledger" surface="navy" head="index" mark={{ index: 3, label: "Who we work with" }} title={["Four kinds of people", "rely on the carrier."]} rows={WHO} />
 
-      <CoverageMap id="coverage" mark={{ index: 4, label: "Coverage" }} title="All 48 contiguous states. Strong Western-US focus." lead="Solidify moves vehicles across the contiguous United States, with strong Western-US coverage — California, Oregon, Washington, Nevada, Arizona, Utah, Idaho, Montana, Wyoming, Colorado and New Mexico." surface="graphite" />
+      <CoverageMap id="coverage" mark={{ index: 4, label: "Coverage" }} title="All 48 contiguous states. Strong Western-US focus." lead="Solidify moves vehicles across the contiguous United States, with strong Western-US coverage — California, Oregon, Washington, Nevada, Arizona, Utah, Idaho, Montana, Wyoming, Colorado, New Mexico and Texas." surface="graphite" />
 
       <Editorial
         id="how"

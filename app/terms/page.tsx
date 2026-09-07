@@ -45,7 +45,7 @@ const SECTIONS: readonly Clause[] = [
   {
     h: "What this website is",
     p: [
-      "This site describes Solidify's vehicle transport services, and provides forms for requesting a quote, making a commercial inquiry, enquiring about driving, and — for operators Solidify has already approved — completing onboarding paperwork.",
+      "This site describes Solidify's vehicle transport services and provides forms for requesting a quote, making a commercial inquiry and enquiring about driving.",
       "The content on this site is provided for information. It is kept accurate to the best of our knowledge, but it is not professional advice and it may change without notice.",
     ],
   },
@@ -66,11 +66,11 @@ const SECTIONS: readonly Clause[] = [
     ],
   },
   {
-    h: "The owner-operator application and onboarding",
+    h: "The owner-operator application",
     p: [
       "New owner-operator applications are completed through an external driver application portal, which opens in a new tab. That portal is operated independently of this website and is governed by its own terms and privacy practices. Submitting an application there does not create any agreement with Solidify.",
-      "Secure onboarding on this site is available only to operators Solidify has approved and issued an access code to. Access codes are personal to the operator they were issued to and must not be shared.",
-      "Completing an application or onboarding does not by itself create a contract, an engagement or an entitlement to loads. Any working relationship between Solidify and an owner-operator is set out in a separate written agreement.",
+      "This website does not collect tax identification numbers, bank details or uploaded documents. Anything of that kind is handled with Solidify directly after approval.",
+      "Completing an application does not by itself create a contract, an engagement or an entitlement to loads. Any working relationship between Solidify and an owner-operator is set out in a separate written agreement.",
     ],
   },
   {
