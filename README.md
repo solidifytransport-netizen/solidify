@@ -86,37 +86,33 @@ identical.
 | Scenario story (pinned, Flip, six photographic panels) | `/car-shipping` | `components/car/Situations.tsx` |
 | Closing (CTA + footer as one scene) | every page | `components/layout/Closing.tsx` |
 
-### WebGL and 3D
+### WebGL
 
-Two three.js surfaces, both of which show something real:
+**The hero scene** (`components/webgl/HeroScene.tsx`, three.js) is the only
+canvas on the site: the loaded rig on a fullscreen quad with mask-driven depth
+parallax, a scroll dolly, road-light traces confined to the road and a
+five-slat reveal. Home only. The masks are rasterised from hand-authored
+polygons in `lib/hero-scene.json` by `scripts/masks.mjs`, so **changing the
+hero photograph means re-authoring those polygons**; the texture width is
+clamped to the ladder the master actually produced.
 
-- **The hero scene** (`components/webgl/HeroScene.tsx`) — the loaded rig on a
-  fullscreen quad with mask-driven depth parallax, a scroll dolly, road-light
-  traces confined to the road and a five-slat reveal. Home only. The masks are
-  rasterised from hand-authored polygons in `lib/hero-scene.json` by
-  `scripts/masks.mjs`, so **changing the hero photograph means re-authoring
-  those polygons**; the texture width is clamped to the ladder the master
-  actually produced.
-- **The coverage board** (`components/webgl/CoverageScene.tsx`) — the 48
-  contiguous states extruded from the same path data the SVG map uses, lit with
-  a key/rim/hemisphere rig, raycast for hover, and risen out of the ground west
-  to east on scroll-in. Focus states stand taller and carry emissive light.
-  Shown on every route with a coverage section; the SVG stays underneath as the
-  fallback and keeps the column's height.
+Two things have been tried in other sections and removed, both at the client's
+call — do not reintroduce either without asking:
 
-An earlier revision put three abstract shader fields behind sections instead
-(travelling trails, a node field, drifting volume). They were removed: an
-ambient light field says nothing about the business, and coverage — which is a
-fact you can point at — does.
+- Three abstract shader fields (travelling trails, a node field, drifting
+  volume) behind page sections. An ambient light field says nothing about the
+  business.
+- A three.js coverage board: the 48 states extruded from the SVG map's own
+  path data, lit and raycast for hover. The flat SVG map reads better, and it
+  is what ships.
 
 Rules, QA-asserted or built into the runtime:
 
-- **At most one canvas per route, two on home** (hero + coverage board).
+- **At most one canvas per route**, and only home has one.
 - Painting only while on screen and the tab is visible; one GSAP-ticker
-  subscription shared with Lenis; DPR capped by device tier; raycasting
-  throttled to ~20/s; complete disposal including `forceContextLoss`.
-- Neither mounts under reduced motion, and the board also sits out on the
-  lowest device tier.
+  subscription shared with Lenis; DPR capped by device tier; complete disposal
+  including `forceContextLoss`.
+- Nothing mounts under reduced motion.
 
 ### Interaction
 

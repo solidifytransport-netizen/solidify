@@ -401,7 +401,7 @@ try {
         check(`[${pg.name}] display type is not overweight`, f.heavy.length === 0, f.heavy.slice(0, 4).join(" | "));
         check(`[${pg.name}] no stretched type`, f.stretched === 0, String(f.stretched));
         check(`[${pg.name}] no photography-credit links`, f.creditLinks === 0, String(f.creditLinks));
-        check(`[${pg.name}] WebGL surfaces stay within budget`, f.canvases <= (pg.name === "home" ? 2 : 1), String(f.canvases));
+        check(`[${pg.name}] WebGL only on the home hero`, pg.name === "home" ? f.canvases <= 1 : f.canvases === 0, String(f.canvases));
         if (pg.name === "home") check("[home] the hero scene is mounted", f.canvas >= 1, String(f.canvas));
         if (pg.name === "owner-operators") check("[owner-operators] carries the one external portal link", f.applyLinks === 1, String(f.applyLinks));
         else check(`[${pg.name}] does not leave the domain`, f.applyLinks === 0, String(f.applyLinks));
