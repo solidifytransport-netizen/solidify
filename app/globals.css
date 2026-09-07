@@ -794,6 +794,60 @@
       inset 0 -1px 0 rgba(0, 0, 0, 0.4),
       0 30px 70px -40px rgba(0, 0, 0, 0.8);
   }
+  /* ---- Coverage map ------------------------------------------------------ */
+  /* The focus states are raised gunmetal tiles; every blue on them is light
+     screened over the top, which is why these two blend modes matter. The
+     frame isolates so the screen never reaches the page behind it. Sizes in
+     the SVG are viewBox USER UNITS, so they scale with the column. */
+  .map-frame {
+    isolation: isolate;
+  }
+  .map-light {
+    mix-blend-mode: screen;
+  }
+  .tile-lamp {
+    mix-blend-mode: screen;
+  }
+  .tile-edge {
+    transition:
+      stroke 300ms var(--ease-arrive),
+      stroke-width 300ms var(--ease-arrive);
+  }
+  [data-tile][data-on="true"] .tile-edge {
+    stroke: #eaf3ff;
+    stroke-width: 1.9;
+  }
+  .tile-abbr {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    fill: #f4f8ff;
+    paint-order: stroke;
+    stroke: rgba(5, 7, 11, 0.75);
+    stroke-width: 2.1px;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+  @media (max-width: 1023.98px) {
+    .tile-abbr {
+      font-size: 16px;
+      stroke-width: 3.2px;
+    }
+    .tile-edge {
+      stroke-width: 1.6;
+    }
+    [data-tile][data-on="true"] .tile-edge {
+      stroke-width: 2.4;
+    }
+  }
+  @media (max-width: 639.98px) {
+    /* ~5 CSS px at 390 — the chips above the map and the sr-only paragraph
+       already carry every name, so nothing factual is lost. */
+    .tile-abbr {
+      display: none;
+    }
+  }
+
   .plate-steel {
     background:
       linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 40%, rgba(255, 255, 255, 0.025) 70%, transparent),
