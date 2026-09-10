@@ -21,7 +21,7 @@ node scripts/peek.mjs car-shipping 1536 864 8   # quick headless look at one rou
 node scripts/mail-sink.mjs 3479          # a local stand-in for the mail provider
 node scripts/mail-sink.mjs 3479 --fail   # …that refuses, to prove a failed send is reported
 npm run env:local    # LOCAL ONLY: writes a gitignored .env.local pointed at the sink
-npm run shaders      # renders any shader programs on their own to .audit/
+npm run glitches     # layout sweep: track heights, rail widths, page width
 npm run imagery:derive <src> <name> <l> <t> <w> <h>   # cut a new master from an existing one
 ```
 
@@ -86,12 +86,37 @@ identical.
 | Scenario story (pinned, Flip, six photographic panels) | `/car-shipping` | `components/car/Situations.tsx` |
 | Closing (CTA + footer as one scene) | every page | `components/layout/Closing.tsx` |
 
+### Brand
+
+The lockups are the client's approved vector masters in
+`Solidify_Final_Blue_Assets`, installed by `node scripts/brand.mjs` into
+`public/brand/` plus `app/icon.svg` and `app/apple-icon.png`. **The artwork is
+never edited** — the lockups are copied byte-for-byte, and the icon only wraps
+the symbol's own markup in a square ground, because a favicon has to be square
+and the symbol is 2.7:1.
+
+The DARK variants are the ones shipped: white artwork with the #147EB3 accent
+on the lower carrier rail. The Light variants are black artwork for light
+grounds and this site has no light surface. If one ever appears, ship the Light
+pair and switch on the surface rather than recolouring these.
+
+`components/layout/Mark.tsx` serves them as `<img>`, not inline SVG: the
+horizontal lockup is ~13 KB of path data that would otherwise ship in every
+page's HTML, and the files carry a `<pattern id="railTrim">` that would collide
+if two lockups were inlined on one page. Intrinsic width/height come from the
+masters, so nothing shifts while they load — size with a height class and leave
+the width to `w-auto`.
+
 ### WebGL
 
 **The hero scene** (`components/webgl/HeroScene.tsx`, three.js) is the only
 canvas on the site: the loaded rig on a fullscreen quad with mask-driven depth
-parallax, a scroll dolly, road-light traces confined to the road and a
-five-slat reveal. Home only. The masks are rasterised from hand-authored
+parallax, a scroll dolly and a five-slat reveal. Home only. The road-light
+traces and the specular steel sweep were **removed at the client's call**:
+fanned over the current hero photograph they read as scratches across the truck
+and straight through the call-to-action buttons. Bringing them back needs a
+vanishing point and a road mask authored for whatever photograph is actually in
+place. Only the mask's B (depth) channel is sampled now. The masks are rasterised from hand-authored
 polygons in `lib/hero-scene.json` by `scripts/masks.mjs`, so **changing the
 hero photograph means re-authoring those polygons**; the texture width is
 clamped to the ladder the master actually produced.
@@ -139,6 +164,20 @@ element computing a weight above 560, any `font-stretch` other than 100%, and
 any `h1` above 88px. The navigation and the footer are sized on their own
 ramps (`.nav-link`, `.foot-link`) rather than borrowing the body's, because
 both had gone quiet enough to read as unfinished.
+
+Two layout rules that `npm run glitches` enforces, both of which reached the
+client by eye before it existed:
+
+- **A horizontal card track is `items-stretch`, never `items-center`.** One
+  card with more content than the rest then sets one height for all of them.
+  Centring instead let the odd card both grow AND sit higher than its
+  neighbours — the owner-operator track ran a 169px spread on every laptop
+  viewport.
+- **A progress rail gets its own row.** As a `flex-1` sibling of a label whose
+  text changes with the active step, the rail is re-measured on every step and
+  its nodes slide sideways; with a static but long label it silently gives up
+  half the shell. The readout goes on a line beneath, left-aligned so it grows
+  from a fixed origin.
 
 Pinned sections own an explicit scroll budget — a per-panel `SETTLE` distance
 plus a landing allowance — and snap to panel centres. Deriving the distance

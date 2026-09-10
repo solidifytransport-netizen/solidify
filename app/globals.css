@@ -794,6 +794,23 @@
       inset 0 -1px 0 rgba(0, 0, 0, 0.4),
       0 30px 70px -40px rgba(0, 0, 0, 0.8);
   }
+  /* ---- The owner-operator road stage -------------------------------------- */
+  /* A pinned full-viewport stage needs a minimum viewport HEIGHT, not just a
+     width. Above the threshold the track fills the stage so the cards use the
+     room. Below it the stage sizes to its content instead, because the tallest
+     card cannot fit between the heading and the foot rail — and a section that
+     runs a little past the fold is better than one that cuts the certificate
+     block off mid-address. Written here rather than as an arbitrary Tailwind
+     variant because `[@media(...)and(...)]:` does not compose with `lg:`. */
+  @media (min-width: 1024px) and (min-height: 740px) {
+    [data-road-stage] {
+      height: 100svh;
+    }
+    [data-road-stage] [data-track] {
+      height: 100%;
+    }
+  }
+
   /* ---- Coverage map ------------------------------------------------------ */
   /* The focus states are raised gunmetal tiles; every blue on them is light
      screened over the top, which is why these two blend modes matter. The

@@ -6,12 +6,21 @@ import { gsap, perfTier, dprCap, damp, EASE } from "@/lib/motion";
 import scene from "@/lib/hero-scene.json";
 
 /**
- * The hero as one lit scene: the hauler photograph on a fullscreen quad with
- * depth parallax (pointer + scroll), a scroll dolly about the load, road-light
- * traces confined to the road, a specular sweep across the steel, a cool
- * grade, and a five-slat diagonal reveal. Mask channels: R hauler, G road,
- * B depth (see scripts/masks.mjs). Rendered on GSAP's ticker; parked when
- * off-screen; disposed completely on unmount.
+ * The hero photograph on a fullscreen quad with depth parallax (pointer +
+ * scroll), a scroll dolly about the load, a cool grade and a five-slat
+ * diagonal reveal. Rendered on GSAP's ticker; parked when off-screen;
+ * disposed completely on unmount.
+ *
+ * REMOVED, at the client's call: the road-light traces and the specular steel
+ * sweep. Fanned from a vanishing point over the new hero photograph they read
+ * as scratches across the truck and straight through the call-to-action
+ * buttons, which is not a lighting effect, it is an artifact. If they are ever
+ * wanted back, they need a vanishing point and a road mask authored for the
+ * photograph that is actually in place.
+ *
+ * The mask PNG still carries R (hauler) and G (road) because scripts/masks.mjs
+ * rasterises the polygons in lib/hero-scene.json unconditionally; only the B
+ * channel (depth) is sampled now.
  *
  * Never mounted under reduced motion or without WebGL — the caller gates it
  * and the <picture> beneath is the complete fallback.
@@ -29,14 +38,11 @@ const FRAG = /* glsl */ `
   uniform vec2 uRes;
   uniform vec2 uImg;
   uniform vec2 uFocal;
-  uniform vec2 uVanish;
   uniform vec2 uPointer;
   uniform float uScroll;
   uniform float uTime;
   uniform float uReveal;
-  uniform float uSweep;
   uniform float uZoom;
-  uniform float uTraces;
   uniform float uOpacity;
   varying vec2 vUv;
 
@@ -74,27 +80,6 @@ const FRAG = /* glsl */ `
     col = mix(vec3(lum), col, 0.9);
     col *= vec3(0.94, 0.97, 1.04);
     col = col * 0.94 + vec3(0.016, 0.022, 0.04);
-
-    /* steel sweep across the hauler */
-    float diag = screen.x * 0.8 + (1.0 - screen.y) * 0.45;
-    float band = exp(-pow((diag - (uSweep * 1.6 - 0.2)) * 6.5, 2.0));
-    col += mask.r * band * vec3(0.55, 0.68, 0.9) * 0.42;
-    /* faint constant rim light on the load, so the steel reads even at rest */
-    col += mask.r * (0.03 + 0.03 * sin(uTime * 0.6)) * vec3(0.5, 0.65, 1.0);
-
-    /* road light traces: stripes streaming from the vanishing point along the road */
-    if (uTraces > 0.5 && mask.g > 0.02) {
-      vec2 vp = vec2(uVanish.x, 1.0 - uVanish.y);
-      vec2 d = screen - vp;
-      float dist = length(d);
-      float ang = atan(d.y, d.x);
-      float lanes = sin(ang * 42.0 + 1.7) * 0.5 + 0.5;
-      float run = fract(dist * 6.0 - uTime * (0.9 + uScroll * 2.2));
-      float streak = smoothstep(0.55, 1.0, run) * smoothstep(1.0, 0.92, run);
-      float glow = pow(lanes, 6.0) * streak * smoothstep(0.02, 0.25, dist);
-      col += mask.g * glow * vec3(0.55, 0.72, 1.0) * 0.7;
-      col += mask.g * 0.05 * vec3(0.4, 0.6, 1.0);
-    }
 
     /* vignette + grain */
     float vig = smoothstep(1.25, 0.35, length((screen - 0.5) * vec2(1.15, 1.0)));
@@ -145,14 +130,11 @@ export function HeroScene({
       uRes: { value: new THREE.Vector2(1, 1) },
       uImg: { value: new THREE.Vector2(scene.textureWidth, scene.textureWidth) },
       uFocal: { value: new THREE.Vector2(scene.focal[0], scene.focal[1]) },
-      uVanish: { value: new THREE.Vector2(scene.vanish[0], scene.vanish[1]) },
       uPointer: { value: new THREE.Vector2() },
       uScroll: { value: 0 },
       uTime: { value: 0 },
       uReveal: { value: 0 },
-      uSweep: { value: -0.6 },
       uZoom: { value: 1.1 },
-      uTraces: { value: tier >= 2 ? 1 : 0 },
       uOpacity: { value: 1 },
     };
     const mat = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG, uniforms, transparent: true, depthWrite: false, depthTest: false });
@@ -208,7 +190,6 @@ export function HeroScene({
     let hidden = document.hidden;
     let t = 0;
     let scroll = 0;
-    let sweeping = false;
     let idle = 0;
 
     const resize = () => {
@@ -231,17 +212,10 @@ export function HeroScene({
     const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting), { rootMargin: "80px" });
     io.observe(section);
 
-    const sweep = () => {
-      if (sweeping) return;
-      sweeping = true;
-      gsap.fromTo(uniforms.uSweep, { value: -0.6 }, { value: 1.4, duration: 1.7, ease: EASE.inOut, onComplete: () => (sweeping = false) });
-    };
-
     const intro = gsap
       .timeline({ paused: true })
       .to(uniforms.uReveal, { value: 1, duration: 1.25, ease: EASE.veil }, 0.15)
-      .to(uniforms.uZoom, { value: 1.04, duration: 2.4, ease: EASE.out }, 0.15)
-      .add(sweep, 0.9);
+      .to(uniforms.uZoom, { value: 1.04, duration: 2.4, ease: EASE.out }, 0.15);
 
     const tick = (_time: number, dt: number) => {
       if (!visible || hidden || !ready) return;
@@ -250,16 +224,6 @@ export function HeroScene({
       idle += d;
       pointer.lerp(pointerTarget, damp(4.5, d));
       scroll += (scrollRef.current - scroll) * damp(8, d);
-      // pointer velocity → a sweep, at most every few seconds
-      const speed = pointer.distanceTo(lastPointer) / Math.max(d, 1e-3);
-      lastPointer.copy(pointer);
-      if (fine && speed > 2.2 && idle > 4.5) {
-        idle = 0;
-        sweep();
-      } else if (idle > 9) {
-        idle = 0;
-        sweep();
-      }
       uniforms.uTime.value = t;
       uniforms.uScroll.value = scroll;
       uniforms.uPointer.value.copy(pointer);
@@ -270,7 +234,6 @@ export function HeroScene({
     return () => {
       disposed = true;
       intro.kill();
-      gsap.killTweensOf(uniforms.uSweep);
       gsap.ticker.remove(tick);
       io.disconnect();
       ro.disconnect();

@@ -75,7 +75,7 @@ export function Road({ id = "road" }: { id?: string }) {
 
   return (
     <Section surface="deep" id={id} ariaLabelledBy={`${id}-title`} head="index" flush className="overflow-clip">
-      <div ref={root} className="relative lg:h-[100svh] lg:overflow-hidden">
+      <div ref={root} data-road-stage className="relative lg:min-h-[100svh] lg:overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-40" />
         <div className="shell relative z-10 flex items-end justify-between gap-6 pt-[clamp(4rem,8vw,6rem)] lg:absolute lg:inset-x-0 lg:top-0 lg:pt-[calc(var(--nav-h)+1.5rem)]">
           <div className="flex flex-col gap-4">
@@ -93,9 +93,13 @@ export function Road({ id = "road" }: { id?: string }) {
           </div>
         </div>
 
+        {/* The clearance below is FIXED px, not an svh fraction: the heading
+            above is absolutely positioned and its height comes from type and
+            --nav-h, so it measures the same at every viewport. A fraction
+            under-shoots on a short laptop and the cards ride up over it. */}
         <div
           data-track
-          className="mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto px-[var(--spacing-gutter)] pb-8 [scrollbar-width:none] lg:mt-0 lg:h-full lg:items-center lg:overflow-visible lg:pb-[3svh] lg:pt-[23svh] [&::-webkit-scrollbar]:hidden"
+          className="mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto px-[var(--spacing-gutter)] pb-8 [scrollbar-width:none] lg:mt-0 lg:items-stretch lg:overflow-visible lg:pb-[5.75rem] lg:pt-[calc(var(--nav-h)+8.25rem)] [&::-webkit-scrollbar]:hidden"
         >
           {/* 01 equipment */}
           <Frame index="01" label="The equipment" wide>
@@ -125,27 +129,27 @@ export function Road({ id = "road" }: { id?: string }) {
 
           {/* 03 insurance */}
           <Frame index="03" label="The coverage you carry" wide>
-            <div className="flex flex-1 flex-col justify-between gap-5 p-6 lg:p-8">
+            <div className="flex flex-1 flex-col justify-between gap-3 p-6 lg:p-8">
               <div className="flex flex-col gap-2">
                 <h3 className="title max-w-[16ch]">Coverage every operator carries.</h3>
-                <p className="small max-w-[52ch]">Your insurance agent sends the certificate, showing Solidify Transport LLC as certificate holder and additional insured, at these minimums.</p>
+                <p className="small max-w-[52ch]">Sent by your insurance agent, at these minimums.</p>
               </div>
               <div className="grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--line)] sm:grid-cols-2 lg:grid-cols-4">
                 {INSURANCE.requirements.map((r) => (
-                  <div key={r.id} className="flex flex-col gap-1 bg-[var(--surface-raised)] p-3 lg:p-4">
+                  <div key={r.id} className="flex flex-col gap-0.5 bg-[var(--surface-raised)] p-3">
                     <span className="label">{r.label}</span>
                     <span className="numeral text-[var(--step-1)] font-medium text-[var(--text-hi)]">{r.limit}</span>
                     <span className="spec !text-[var(--text-low)]">{r.note}</span>
                   </div>
                 ))}
               </div>
+              {/* One line, not three. This card carries the most content on the
+                  track and therefore sets the height for all four; stacking the
+                  holder address cost ~50px that a 768px-tall laptop does not
+                  have. The address itself is unchanged and still verbatim. */}
               <div className="flex flex-col gap-0.5">
                 <span className="label">Certificate holder · additional insured</span>
-                {INSURANCE.certificateHolder.map((l) => (
-                  <span key={l} className="small !text-[var(--text-hi)]">
-                    {l}
-                  </span>
-                ))}
+                <span className="small !text-[var(--text-hi)]">{INSURANCE.certificateHolder.join(", ")}</span>
               </div>
             </div>
           </Frame>
@@ -186,6 +190,7 @@ function Frame({ index, label, wide = false, children }: { index: string; label:
       className={clsx(
         "plate plate-steel relative flex flex-none snap-center flex-col overflow-hidden transition-[filter,opacity] duration-700 data-[centred=false]:lg:opacity-70",
         wide ? "w-[88vw] lg:w-[62vw]" : "w-[88vw] lg:w-[40vw]",
+        "lg:min-h-0",
       )}
       style={{ minHeight: "clamp(440px, 55svh, 600px)" }}
     >
@@ -194,7 +199,7 @@ function Frame({ index, label, wide = false, children }: { index: string; label:
         <span className="index-xl !text-[clamp(1.4rem,1.1rem+0.9vw,2rem)]">{index}</span>
         <span className="spec">{label}</span>
       </div>
-      <div className="relative flex flex-1 flex-col pt-[4.5rem]">{children}</div>
+      <div className="relative flex flex-1 flex-col pt-[3.25rem]">{children}</div>
     </article>
   );
 }

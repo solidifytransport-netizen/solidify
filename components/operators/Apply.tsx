@@ -190,9 +190,20 @@ export function ApplicationRoute() {
           </div>
         </div>
 
-        {/* the rail: it breaks where the work leaves Solidify */}
-        <div className="shell relative flex items-center gap-5">
-          <div className="relative h-px flex-1 bg-[var(--line-strong)]">
+        {/* The rail gets its own row at full shell width, with the readout on a
+            line beneath it.
+
+            It used to be `flex-1` next to a `whitespace-nowrap` label whose
+            text changes with the active step. A fixed-width sibling in a flex
+            row sets the rail's width, so every step change re-measured the
+            rail and shifted the nodes, the fill and the travelling head
+            sideways — and the line never sat centred in the section, because
+            the label was eating the right fifth of it. The readout is now
+            left-aligned under the rail, so it grows rightward from a fixed
+            origin and moves nothing. */}
+        {/* It also breaks where the work leaves Solidify. */}
+        <div className="shell relative flex flex-col gap-3">
+          <div className="relative h-px w-full bg-[var(--line-strong)]">
             <div data-route-fill className="absolute inset-y-0 left-0 w-full origin-left bg-[rgba(179,212,255,0.85)]" style={{ transform: "scaleX(0)" }} />
             <span
               aria-hidden
@@ -216,9 +227,12 @@ export function ApplicationRoute() {
               />
             ))}
           </div>
-          <span className="spec whitespace-nowrap" aria-live="polite">
-            {String(active + 1).padStart(2, "0")} / {String(STAGES.length).padStart(2, "0")} · {STAGES[active].title}
-          </span>
+          <div className="flex items-baseline justify-between gap-6">
+            <span className="spec" aria-live="polite">
+              {String(active + 1).padStart(2, "0")} / {String(STAGES.length).padStart(2, "0")} · {STAGES[active].title}
+            </span>
+            <span className="spec !text-[var(--text-low)]">Scroll</span>
+          </div>
         </div>
       </div>
     </Section>

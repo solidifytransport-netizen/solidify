@@ -1,0 +1,49 @@
+{
+  "brand_blue": "#147EB3",
+  "accent_boundary_in_original_coordinates": {
+    "y": 489,
+    "height": 70
+  },
+  "geometry_checks": {
+    "Stacked_Light": {
+      "paths_and_transforms_identical": true,
+      "alpha_difference_max": 0
+    },
+    "Stacked_Dark": {
+      "paths_and_transforms_identical": true,
+      "alpha_difference_max": 0
+    },
+    "Horizontal_Light": {
+      "paths_and_transforms_identical": true,
+      "alpha_difference_max": 0
+    },
+    "Horizontal_Dark": {
+      "paths_and_transforms_identical": true,
+      "alpha_difference_max": 0
+    },
+    "Symbol_Light": {
+      "paths_and_transforms_identical": true,
+      "alpha_difference_max": 0
+    },
+    "Symbol_Dark": {
+      "paths_and_transforms_identical": true,
+      "alpha_difference_max": 0
+    }
+  },
+  "metallic_alpha_difference_max": 0,
+  "approved_master_hashes_unchanged": true,
+  "flat_asset_sha256": {
+    "SVG/Solidify_Blue_Stacked_Light.svg": "4bc79019334049a421fdeddb5fdc11c682ea02730453a3976e1a07a61e8ba9e4",
+    "PNG/Solidify_Blue_Stacked_Light.png": "d6802781ea9d350f99f6189abbe343d0fb258708521cd26784336d778e7597dc",
+    "SVG/Solidify_Blue_Stacked_Dark.svg": "a0b34f075a6ee48e89c449f7e95d10a950c465fb48c2bec691e8124f8742b362",
+    "PNG/Solidify_Blue_Stacked_Dark.png": "98f188d257043fb5f36d964c3b8855c185989347d6deac12b4aced3c6aa2e58c",
+    "SVG/Solidify_Blue_Horizontal_Light.svg": "3c0bcc87789eaa8cd96fa14be4c76d586297f9ed63c39ac015184d67506a11c7",
+    "PNG/Solidify_Blue_Horizontal_Light.png": "749463e131e26e72404f311e45aefd0e8495cc5c66729acef307857fb4a02d36",
+    "SVG/Solidify_Blue_Horizontal_Dark.svg": "145bdf9360fccf29125a57a21d9c79e6c69a5b26ad7355ae885b84659730dd0b",
+    "PNG/Solidify_Blue_Horizontal_Dark.png": "96e10842c3ac6db341f72e41e7acddeef4bf7d7fc0bc82201a0e598eb329ab81",
+    "SVG/Solidify_Blue_Symbol_Light.svg": "1699a56bc980d51a12ee0017c2d0ae5f1a8ee9021d175269d092fd4276040068",
+    "PNG/Solidify_Blue_Symbol_Light.png": "04d23b11cab6ae7119073d9a46c6d94abb09eaeaa207063512438cec185757a2",
+    "SVG/Solidify_Blue_Symbol_Dark.svg": "c9203a991ddbd81d6de0ee7fc366dd0b485e87fc829e331c041557cf0db21a75",
+    "PNG/Solidify_Blue_Symbol_Dark.png": "26609956de44510db2a54abbb1d3bd909e057c59bc1510cd4917404732b3b3c1"
+  }
+}

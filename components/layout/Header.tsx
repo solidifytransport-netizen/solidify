@@ -8,7 +8,7 @@ import clsx from "clsx";
 import { gsap, ScrollTrigger, EASE } from "@/lib/motion";
 import { NAV, CTA, COMPANY } from "@/lib/site";
 import { useSmoothScroll } from "./SmoothScroll";
-import { Mark, Wordmark } from "./Mark";
+import { Logo } from "./Mark";
 import { PhoneLink } from "@/components/ui/Primitives";
 
 /**
@@ -171,9 +171,8 @@ export function Header() {
           style={{ height: "var(--nav-h)" }}
           data-nav-bar
         >
-          <Link href="/" aria-label={`${COMPANY.name} — home`} className="relative z-10 flex items-center gap-3">
-            <Mark className="h-9 w-9" />
-            <Wordmark className="text-[0.95rem]" />
+          <Link href="/" aria-label={`${COMPANY.name} — home`} className="relative z-10 flex items-center">
+            <Logo variant="horizontal" priority className="h-[34px] lg:h-[40px]" />
           </Link>
 
           <nav aria-label="Primary" className="hidden lg:block">

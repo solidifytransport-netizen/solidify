@@ -219,8 +219,13 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
                             </Fragment>
                           ))}
                         </dl>
-                        <div className="relative flex items-center gap-4">
-                          <div className="relative h-px flex-1 bg-[var(--line-strong)]">
+                        {/* Same rule as the other rails: the beat title sits
+                            UNDER the line, not beside it. Beside it, each beat's
+                            differently-sized title gave its own rail a different
+                            width, and the nodes slid sideways during the
+                            cross-fade between beats. */}
+                        <div className="relative flex flex-col gap-2.5">
+                          <div className="relative h-px w-full bg-[var(--line-strong)]">
                             <div
                               className="absolute inset-y-0 left-0 origin-left bg-[rgba(179,212,255,0.85)] transition-[width] duration-700"
                               style={{ width: `${(i / (beats.length - 1)) * 100}%` }}
@@ -235,7 +240,7 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
                               />
                             ))}
                           </div>
-                          <span className="spec whitespace-nowrap">{b.title}</span>
+                          <span className="spec">{b.title}</span>
                         </div>
                       </div>
                     ))}
@@ -244,9 +249,11 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
               </div>
             </div>
 
-            {/* route rail */}
-            <div className="relative mt-10 flex items-center gap-4">
-              <div className="relative h-px flex-1 bg-[var(--line-strong)]">
+            {/* Route rail, full width on its own row. As a `flex-1` sibling of
+                the lead it was giving up 673px — 45% of the shell — so the
+                beat nodes sat bunched into the left half of the section. */}
+            <div className="relative mt-10 flex flex-col gap-3">
+              <div className="relative h-px w-full bg-[var(--line-strong)]">
                 <div data-rail-fill className="absolute inset-y-0 left-0 w-full origin-left bg-[rgba(179,212,255,0.85)]" style={{ transform: "scaleX(0)" }} />
                 {beats.map((b, i) => (
                   <span

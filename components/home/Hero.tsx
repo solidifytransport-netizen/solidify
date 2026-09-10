@@ -37,32 +37,17 @@ export function Hero() {
       const el = root.current;
       if (!el) return;
       const spec = el.querySelector<HTMLElement>("[data-hero-spec]");
-      const route = el.querySelector<SVGPathElement>("[data-hero-route]");
-      const routeDot = el.querySelector<SVGCircleElement>("[data-hero-route-dot]");
       const reduced = window.matchMedia(MQ.reduced).matches;
 
-      if (reduced) {
-        if (route) gsap.set(route, { drawSVG: "100%" });
-        if (routeDot) gsap.set(routeDot, { autoAlpha: 1 });
-        return;
-      }
+      if (reduced) return;
 
-      /* ---- arrival: the mono spec line types itself, the route draws ---- */
+      /* ---- arrival: the mono spec line types itself ---- */
       let split: SplitText | null = null;
       if (spec) {
         split = new SplitText(spec, { type: "chars" });
         gsap.set(spec, { opacity: 1 });
         gsap.from(split.chars, { opacity: 0, duration: 0.02, stagger: 0.022, delay: 0.35, ease: "none" });
       }
-      if (route) {
-        gsap.set(route, { drawSVG: "0%" });
-        gsap.to(route, { drawSVG: "100%", duration: 1.6, ease: EASE.inOut, delay: 1.1 });
-      }
-      if (routeDot) {
-        gsap.set(routeDot, { autoAlpha: 0 });
-        gsap.to(routeDot, { autoAlpha: 1, duration: 0.5, delay: 2.5 });
-      }
-
       /* ---- the pinned scroll: the load advances, the type leaves ---- */
       const titleEl = el.querySelector<HTMLElement>("#hero-title");
       const exitTargets = el.querySelectorAll<HTMLElement>("[data-hero-exit]");
@@ -124,12 +109,6 @@ export function Hero() {
         <div aria-hidden className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[rgba(5,7,11,0.6)] to-transparent" />
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-40" />
       </div>
-
-      {/* route hairline: from the load toward the next section */}
-      <svg aria-hidden className="pointer-events-none absolute inset-0 -z-[5] h-full w-full" viewBox="0 0 1000 600" preserveAspectRatio="none" fill="none">
-        <path data-hero-route d="M 620 470 C 720 470, 820 520, 1000 560" stroke="rgba(179,212,255,0.55)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-        <circle data-hero-route-dot cx="620" cy="470" r="3" fill="#b3d4ff" />
-      </svg>
 
       <div className="shell relative z-10 flex flex-col gap-4 pb-[clamp(1.5rem,4vh,3rem)] pt-[calc(var(--nav-h)+1rem)] lg:gap-6 lg:pt-[calc(var(--nav-h)+2rem)]">
         <p data-hero-spec data-hero-exit className="spec flex flex-wrap gap-x-3 gap-y-1 !text-[var(--text-mid)] opacity-0" aria-label={h.spec}>

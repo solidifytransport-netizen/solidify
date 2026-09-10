@@ -10,7 +10,7 @@ import { Plate } from "@/components/ui/Plate";
 import { Button } from "@/components/ui/Button";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
 import { PhoneLink, Lines } from "@/components/ui/Primitives";
-import { Mark } from "./Mark";
+import { Logo } from "./Mark";
 import type { MediaId } from "@/lib/media";
 
 const WORD = "SOLIDIFY";
@@ -124,9 +124,8 @@ export function Closing({
         <div className="shell-wide relative flex flex-col gap-12 pb-8 pt-[clamp(3.5rem,6vw,5.5rem)]">
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.35fr_0.85fr_0.95fr_0.8fr_1.25fr] lg:gap-8">
             <div className="flex flex-col gap-6">
-              <Link href="/" className="flex items-center gap-3" aria-label={`${COMPANY.name} — home`}>
-                <Mark className="h-10 w-10" />
-                <span className="font-display text-[1rem] font-medium tracking-[0.18em]">SOLIDIFY</span>
+              <Link href="/" className="flex w-fit items-center" aria-label={`${COMPANY.name} — home`}>
+                <Logo variant="horizontal" className="h-[46px]" />
               </Link>
               <p className="max-w-[34ch] text-[var(--step--1)] leading-relaxed text-[var(--text-mid)]">
                 {COMPANY.descriptor}. {CLAIMS.coverage}, with a strong Western-US focus.

@@ -18,3 +18,9 @@ public/media/gen
 !.env.example
 *.tsbuildinfo
 next-env.d.ts
+
+# The client's brand packages. scripts/brand.mjs installs what the site serves
+# into public/brand, app/icon.svg and app/apple-icon.png; the masters themselves
+# are ~15MB of PDF/EPS/PNG that the build never reads.
+Solidify_Final_Blue_Assets
+Solidify_Transport_Final_Assets

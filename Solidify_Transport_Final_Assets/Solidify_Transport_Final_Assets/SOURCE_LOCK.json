@@ -1,0 +1,33 @@
+{
+  "identity": "SOLIDIFY TRANSPORT / Fleet Motion / Premium Automotive",
+  "export_operation": "format conversion only",
+  "approved_svg_sha256": {
+    "Solidify_Stacked_White_On_Black.svg": "7e5498e8ef380c867d8aa296bad6a8119b9055e78ac61b0935eb65cfd781f2fd",
+    "Solidify_Horizontal_Black_On_White.svg": "57376289ab72eb6fcd5e19987552da25378ddbf5e221f4bc2352b52052656a66",
+    "Solidify_Stacked_White.svg": "35c5d13f34f9a49f9ab35b64e8b96039b66507ee0bf95fa3c1a55d37c277002c",
+    "Solidify_Wordmark_Black_On_White.svg": "cdb697a8b5816af769638bfbb8dc33c22ef680148a0b60e0dd1e4865f38c573f",
+    "Solidify_Wordmark_Black.svg": "ec9092344ef33ddec241ccc952d31237c4c984032f1943ac315a101e98a37163",
+    "Solidify_Symbol_Black_On_White.svg": "227e2f23906cd5a0aeea0a2d02655845ca86052b99485ae22cb12a6e7805a461",
+    "Solidify_Symbol_White_On_Black.svg": "522333e1e1bea1209940ec672614eebf6e9dcc2cd3811b79b3a457dbfe24c362",
+    "Solidify_Stacked_Black.svg": "6f3bd58034f8356af746257a5982a1015b1e9092c879f0115b8e5424ea95b963",
+    "Solidify_Stacked_Black_On_White.svg": "e42ac410d7f71bca5c56af52d656381ed0a0aab6ceb773aca46997d12d002464",
+    "Solidify_Symbol_Black.svg": "0feff88b4ef22d0c4ba36cb2eb4bbe04887ccf50a6b2b4ca6234f633808edb08",
+    "Solidify_Wordmark_White_On_Black.svg": "7a141ee8e05e6525ecfc34838e2a6be4651359f983673ef6d49ce36a1361b1d7",
+    "Solidify_Symbol_White.svg": "aeaffb7d9c1f3b9fc725ba350e80880fa50a8d9912d68dabbce3a132f32529ac",
+    "Solidify_Horizontal_White_On_Black.svg": "10763d5f7db48cad83134f64f7ad6d00b70a3c6c7e6be431505f228c2e9b4ea4",
+    "Solidify_Horizontal_Black.svg": "a5f66830649b4cf97cc9aa12a74194e350df1b4d148c2914499894ae9919f1ac",
+    "Solidify_Horizontal_White.svg": "da4e1833ac6535d3594d6688fe0ad748d679cf7ec60725811994a8a7773f9259",
+    "Solidify_Wordmark_White.svg": "dfee2c364e87933e249e4a5bd951b8eb1de7e46b723f4f783852d73ad46bf4c5"
+  },
+  "identical_path_data_across_arrangements": true,
+  "identical_transforms_across_color_variants": true,
+  "svg_masters_byte_identical": true,
+  "png_widths": [
+    256,
+    512,
+    1024,
+    2048,
+    4096,
+    8192
+  ]
+}
