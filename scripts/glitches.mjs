@@ -16,6 +16,18 @@
  *                  Both pinned rails were `flex-1` next to a nowrap label whose
  *                  text changed with the active step, so the line and its nodes
  *                  shifted sideways as you scrolled and never sat centred.
+ *   RAIL BREAKS    a rail with a chunk of the section's own background
+ *                  painted over it. One was deliberate — it marked where the
+ *                  owner-operator route leaves Solidify's systems — but it
+ *                  read as a broken line and was reported as a defect twice.
+ *   BAR FIT        two items in the nav bar with no gap between them. Five
+ *                  nav labels, the quote button and the lockup do not fit a
+ *                  932px bar, so at 1024 "About" sat on the quote button and
+ *                  the wordmark ran into "Car Shipping".
+ *   LOCKUP BOX     a brand lockup whose box is a different shape from the
+ *                  artwork, so the SVG letterboxes and draws smaller than the
+ *                  space reserved for it. This is how a 40px header mark came
+ *                  to render 18px of logo.
  *   PAGE WIDTH     anything forcing a horizontal scrollbar.
  *
  * An earlier version compared every flex/grid row on the page and drowned the
@@ -51,7 +63,7 @@ const check = (label, ok, detail = "") => {
 };
 
 const audit = (trackSel) => {
-  const out = { tracks: [], grids: [], rails: [], page: null };
+  const out = { tracks: [], grids: [], rails: [], breaks: [], bar: [], lockups: [], page: null };
   out.page = { scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth };
 
   const groupOf = (el) => el.closest("[data-section]")?.dataset.section || el.parentElement?.id || "?";
@@ -104,7 +116,41 @@ const audit = (trackSel) => {
     if (inRow || shortfall > 4) {
       out.rails.push({ where: groupOf(rail), railW: Math.round(r.width), parentW: Math.round(parent.getBoundingClientRect().width), shortfall, inRow });
     }
+    /* A child filled with the section's own background is a hole punched in
+       the line. Nodes are small and round; a mask is a wide opaque block. */
+    const ground = getComputedStyle(rail.closest("[data-surface]") || document.body).backgroundColor;
+    for (const c of nodes) {
+      const ccs = getComputedStyle(c);
+      const cw = c.getBoundingClientRect().width;
+      if (ccs.backgroundColor === ground && cw > 12) {
+        out.breaks.push({ where: groupOf(rail), width: Math.round(cw), fill: ccs.backgroundColor });
+      }
+    }
   }
+  /* ---- the nav bar fits ------------------------------------------------- */
+  const bar = document.querySelector("[data-nav-bar]");
+  if (bar) {
+    const boxes = [...bar.children]
+      .map((el) => ({ el, r: el.getBoundingClientRect() }))
+      .filter((b) => b.r.width > 0 && getComputedStyle(b.el).display !== "none")
+      .sort((a, b) => a.r.left - b.r.left);
+    for (let i = 1; i < boxes.length; i++) {
+      const gap = Math.round(boxes[i].r.left - boxes[i - 1].r.right);
+      if (gap < 16) out.bar.push({ gap, after: boxes[i - 1].el.tagName.toLowerCase(), before: boxes[i].el.tagName.toLowerCase() });
+    }
+  }
+
+  /* ---- brand lockups draw at the size they reserve ----------------------- */
+  for (const img of document.querySelectorAll('img[src^="/brand/"]')) {
+    if (!img.naturalWidth || !img.naturalHeight) continue;
+    const r = img.getBoundingClientRect();
+    if (r.width < 1 || r.height < 1) continue;
+    const intrinsic = img.naturalWidth / img.naturalHeight;
+    const drawn = r.width / r.height;
+    const off = Math.abs(drawn / intrinsic - 1);
+    if (off > 0.03) out.lockups.push({ src: img.getAttribute("src"), box: [Math.round(r.width), Math.round(r.height)], off: `${Math.round(off * 100)}%` });
+  }
+
   return out;
 };
 
@@ -130,6 +176,9 @@ try {
       check(`${at} track cards share a height`, r.tracks.length === 0, r.tracks.map((x) => `${x.where}: [${x.heights}] spread ${x.spread} (${x.align})`).join(" | "));
       check(`${at} card grids share a row height`, r.grids.length === 0, r.grids.map((x) => `${x.where}: [${x.heights}] spread ${x.spread}`).join(" | "));
       check(`${at} rails are not sized by a sibling`, r.rails.length === 0, r.rails.map((x) => `${x.where}: rail ${x.railW} of ${x.parentW} (${x.shortfall} short${x.inRow ? ", in a flex row" : ""})`).join(" | "));
+      check(`${at} rails are continuous`, r.breaks.length === 0, r.breaks.map((x) => `${x.where}: ${x.width}px of ${x.fill} painted over the line`).join(" | "));
+      check(`${at} nav bar items keep a gap`, r.bar.length === 0, r.bar.map((x) => `${x.after} → ${x.before}: ${x.gap}px`).join(" | "));
+      check(`${at} brand lockups fill their box`, r.lockups.length === 0, r.lockups.map((x) => `${x.src} drawn in ${x.box[0]}x${x.box[1]}, ${x.off} off its aspect`).join(" | "));
     }
     await ctx.close();
   }

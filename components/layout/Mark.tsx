@@ -14,18 +14,32 @@ import clsx from "clsx";
  * and the files carry a `<pattern id="railTrim">` — inlining two lockups on
  * one page would collide those ids and the rail would take the wrong fill.
  *
- * Intrinsic width/height are the masters' own, so the aspect is reserved
- * before the SVG loads and nothing shifts. Size with a height class and leave
- * the width to `w-auto`.
+ * Size it on ONE axis and let the other follow. Which axis depends on what
+ * constrains the placement: the header bar constrains height, so it sets
+ * `h-… w-auto`; the footer's grid column constrains width, so it sets
+ * `w-full max-w-…`. Nothing here presets an axis, because a `w-auto` in the
+ * base class collides with a caller's `w-full` and which one wins is then down
+ * to stylesheet order rather than intent — and when width loses, the SVG
+ * letterboxes inside its box and the artwork shrinks again.
+ *
+ * The height, where it is used, is the height of the
+ * height of the ARTWORK, because brand.mjs re-frames each master onto its own
+ * bounding box. The masters ship with a great deal of padding — the horizontal
+ * lockup is 54.5% empty vertically — so before that re-framing a 40px box drew
+ * an 18px logo, and the header mark read as smaller than the nav beside it.
+ *
+ * The numbers below are the re-framed viewBoxes, printed by brand.mjs. They are
+ * here so the aspect is reserved before the SVG loads and nothing shifts; if
+ * the masters are ever reinstalled, re-run the script and copy them across.
  */
 
 const LOCKUPS = {
-  /** symbol + wordmark on one row — the header and footer lockup. 5.10:1 */
-  horizontal: { src: "/brand/solidify-horizontal.svg", w: 1837, h: 360 },
-  /** symbol over wordmark. 1.94:1 */
-  stacked: { src: "/brand/solidify-stacked.svg", w: 1609, h: 831 },
-  /** the symbol alone. 2.69:1 — it is NOT square, so it cannot go in a square box. */
-  symbol: { src: "/brand/solidify-symbol.svg", w: 1440, h: 536 },
+  /** symbol + wordmark on one row — the header and footer lockup. 9.48:1 */
+  horizontal: { src: "/brand/solidify-horizontal.svg", w: 1650, h: 174 },
+  /** symbol over wordmark. 2.12:1 */
+  stacked: { src: "/brand/solidify-stacked.svg", w: 1476, h: 698 },
+  /** the symbol alone. 3.23:1 — it is NOT square, so it cannot go in a square box. */
+  symbol: { src: "/brand/solidify-symbol.svg", w: 1308, h: 405 },
 } as const;
 
 export type LogoVariant = keyof typeof LOCKUPS;
@@ -56,7 +70,7 @@ export function Logo({
       decoding="async"
       loading={priority ? "eager" : "lazy"}
       fetchPriority={priority ? "high" : "auto"}
-      className={clsx("block w-auto", className)}
+      className={clsx("block", className)}
     />
   );
 }

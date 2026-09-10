@@ -171,11 +171,21 @@ export function Header() {
           style={{ height: "var(--nav-h)" }}
           data-nav-bar
         >
-          <Link href="/" aria-label={`${COMPANY.name} — home`} className="relative z-10 flex items-center">
-            <Logo variant="horizontal" priority className="h-[34px] lg:h-[40px]" />
+          <Link href="/" aria-label={`${COMPANY.name} — home`} className="relative z-10 flex shrink-0 items-center">
+            <Logo variant="horizontal" priority className="h-[26px] w-auto md:h-[30px] xl:h-[34px]" />
           </Link>
 
-          <nav aria-label="Primary" className="hidden lg:block">
+          {/* The inline nav needs 1280, not 1024.
+
+              Five labels measure ~575px, the quote button ~117px and the
+              lockup ~323px: 1015px of content, which needs roughly 1130px of
+              bar before the gaps read as gaps. At 1024 the bar is 932px, so
+              "About" sat hard against the quote button and the wordmark ran
+              into "Car Shipping" — a collision that predates the lockup
+              change and that a smaller logo only hid. Below xl the full-screen
+              index takes over, which is a better answer at that width than
+              five cramped labels. */}
+          <nav aria-label="Primary" className="hidden xl:block">
             <ul role="list" className="flex items-center gap-[clamp(1.05rem,1.7vw,2.1rem)]">
               {NAV.map((item) => (
                 <li key={item.href}>
@@ -196,7 +206,7 @@ export function Header() {
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
               aria-controls="nav-panel"
-              className="relative z-10 flex h-11 w-11 items-center justify-center rounded-md border border-[var(--line-strong)] transition-colors hover:border-[rgba(127,182,255,0.7)] lg:hidden"
+              className="relative z-10 flex h-11 w-11 items-center justify-center rounded-md border border-[var(--line-strong)] transition-colors hover:border-[rgba(127,182,255,0.7)] xl:hidden"
             >
               <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
               <span aria-hidden className="relative block h-[10px] w-[20px]">

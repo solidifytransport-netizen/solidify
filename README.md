@@ -91,9 +91,18 @@ identical.
 The lockups are the client's approved vector masters in
 `Solidify_Final_Blue_Assets`, installed by `node scripts/brand.mjs` into
 `public/brand/` plus `app/icon.svg` and `app/apple-icon.png`. **The artwork is
-never edited** — the lockups are copied byte-for-byte, and the icon only wraps
-the symbol's own markup in a square ground, because a favicon has to be square
-and the symbol is 2.7:1.
+never edited** — every path and transform is carried across untouched. What the
+script does change is the **viewBox**, which is a window onto them, not a
+modification of them.
+
+That re-framing is the point of the script. The masters carry a great deal of
+padding: the horizontal lockup is 54.5% empty vertically, so a 40px box drew an
+18px logo and the header mark read as smaller than the nav beside it. Each
+lockup is re-framed onto its own alpha bounding box (measured by rendering and
+trimming with `sharp`, because the files nest several groups and a `<pattern>`
+and reading the geometry back out is guesswork) plus a 3% optical margin. A CSS
+size then means the size of the artwork. Re-running the script prints the new
+intrinsic dimensions to paste into `Mark.tsx`.
 
 The DARK variants are the ones shipped: white artwork with the #147EB3 accent
 on the lower carrier rail. The Light variants are black artwork for light
@@ -103,9 +112,21 @@ pair and switch on the surface rather than recolouring these.
 `components/layout/Mark.tsx` serves them as `<img>`, not inline SVG: the
 horizontal lockup is ~13 KB of path data that would otherwise ship in every
 page's HTML, and the files carry a `<pattern id="railTrim">` that would collide
-if two lockups were inlined on one page. Intrinsic width/height come from the
-masters, so nothing shifts while they load — size with a height class and leave
-the width to `w-auto`.
+if two lockups were inlined on one page. Intrinsic width/height are the
+re-framed ones, so nothing shifts while they load.
+
+**Size a lockup on the axis its placement constrains, and let the other
+follow.** The header bar constrains height, so it sets `h-… w-auto`; the
+footer's grid column constrains width, so it sets `w-full max-w-…`. Getting
+this backwards does not overflow — the SVG letterboxes inside its box and the
+artwork silently shrinks again, which is the original defect. `npm run
+glitches` asserts every `/brand/` image draws at its own aspect ratio.
+
+The horizontal lockup is 9.5:1, so it takes real width: 323px at the header's
+34px. Five nav labels, the quote button and that lockup need about 1130px of
+bar, which is why the inline nav is `xl:` (1280) rather than `lg:` — below that
+the full-screen index takes over. `npm run glitches` also asserts the nav bar's
+items keep a gap at every viewport.
 
 ### WebGL
 

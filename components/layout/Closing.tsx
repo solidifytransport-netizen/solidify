@@ -125,7 +125,7 @@ export function Closing({
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.35fr_0.85fr_0.95fr_0.8fr_1.25fr] lg:gap-8">
             <div className="flex flex-col gap-6">
               <Link href="/" className="flex w-fit items-center" aria-label={`${COMPANY.name} — home`}>
-                <Logo variant="horizontal" className="h-[46px]" />
+                <Logo variant="horizontal" className="w-full max-w-[288px]" />
               </Link>
               <p className="max-w-[34ch] text-[var(--step--1)] leading-relaxed text-[var(--text-mid)]">
                 {COMPANY.descriptor}. {CLAIMS.coverage}, with a strong Western-US focus.

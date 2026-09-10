@@ -15,7 +15,7 @@ const holderLine = INSURANCE.certificateHolder.join(", ");
 type Stage = {
   title: string;
   text: string;
-  /** Whose systems the stage happens on. The break in the line marks the change. */
+  /** Whose systems the stage happens on. Shown by the card label and tint. */
   where: "solidify" | "portal";
 };
 
@@ -23,12 +23,15 @@ type Stage = {
  * The owner-operator application route — the signature interaction of
  * /owner-operators, and the only place on this site that leaves the domain.
  *
- * Seven stages on one pinned horizontal rail. A line advances stage to stage
- * as you scroll and each node lights as the line reaches it. Between stage 03
- * and stage 04 the line leaves Solidify's ground: it breaks, the card surface
- * changes, and it picks up again at stage 06. That break is the whole point —
- * the application itself is completed somewhere else, and the visitor should
- * see that before they get there rather than after.
+ * Five stages on one pinned horizontal rail. A CONTINUOUS line advances stage
+ * to stage as you scroll and each node lights as the line reaches it.
+ *
+ * The rail used to carry a painted gap between stages 03 and 05 to mark where
+ * the work leaves Solidify's systems. Do not put it back: it read as a broken
+ * line rather than as a deliberate break, and it was reported as a defect
+ * twice. The hand-off is carried instead by the SOLIDIFY / DRIVER PORTAL label
+ * on each card and by the tinted surface on the portal ones, which is where a
+ * reader looks for that information anyway.
  *
  * Scroll budget is deliberate: SETTLE px of travel per stage, plus a landing
  * allowance, and a snap that lands on stage centres. An earlier version
@@ -46,7 +49,7 @@ const STAGES: readonly Stage[] = [
   { title: "Approved and running", text: "Once you are approved, Solidify picks it up with you directly — the agreement, the paperwork and your first dispatch.", where: "solidify" },
 ];
 
-/** The line leaves Solidify's ground after stage 03 and returns at stage 05. */
+/** Stage 03 is the one that leaves for the portal; it carries the link. */
 const HANDOFF = 2;
 /** Scroll travel per stage, in px, on top of the horizontal distance. */
 const SETTLE = 210;
@@ -146,7 +149,7 @@ export function ApplicationRoute() {
             </div>
             <Reveal className="lg:col-span-5 lg:justify-self-end">
               <p className="lead lg:max-w-[38ch]">
-                Three of them are Solidify&apos;s. The application itself is completed on an external driver application portal — the break in the line is where that happens.
+                Three of them are Solidify&apos;s. The application itself is completed on an external driver application portal, which opens in a new tab.
               </p>
             </Reveal>
           </div>
@@ -210,12 +213,6 @@ export function ApplicationRoute() {
               data-route-head
               className="absolute top-1/2 h-[7px] w-[7px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#dbe9ff] shadow-[0_0_16px_4px_rgba(127,182,255,0.55)]"
               style={{ left: "0%" }}
-            />
-            {/* the hand-off gap, painted over the rail */}
-            <span
-              aria-hidden
-              className="absolute top-1/2 h-[3px] -translate-y-1/2 bg-[var(--surface)]"
-              style={{ left: `${pct(HANDOFF + 0.35)}%`, width: `${pct(0.3)}%` }}
             />
             {STAGES.map((s, i) => (
               <span
