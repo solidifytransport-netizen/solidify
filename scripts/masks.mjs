@@ -1,7 +1,7 @@
 /**
  * Hero scene masks.
  *
- * Rasterises the polygons in lib/hero-scene.json into one small RGB PNG that
+ * Rasterizes the polygons in lib/hero-scene.json into one small RGB PNG that
  * the WebGL hero samples per pixel:
  *   R — the hauler silhouette (steel light sweep)
  *   G — the road / ground region (light traces)
@@ -55,7 +55,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" 
    in recent builds; if it does not, the composite below guarantees the channels. */
 const base = await sharp(Buffer.from(svg)).png().toBuffer();
 
-// Belt and braces: composite pure-channel layers so R/G are exact regardless of blend support.
+// Belt and suspenders: composite pure-channel layers so R/G are exact regardless of blend support.
 const layer = (pts, fill) =>
   sharp(
     Buffer.from(

@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/Button";
  * it does NOT carry the external application portal.
  *
  * CONTENT RULE, and the reason this page reads the way it does: Solidify has
- * confirmed nothing about a company-driver programme — no pay basis, no
+ * confirmed nothing about a company-driver program — no pay basis, no
  * experience or endorsement minimums, no benefits, no hiring areas. None of
  * that is invented here. What the page states is the company (confirmed), the
  * work (a description of the trade, not a claim), and the federal rules that
@@ -77,7 +77,7 @@ const FAQ: readonly FaqItem[] = [
     a: "Send your details through the form on this page, or call the office. Solidify follows up directly — there is no separate portal for this route.",
   },
   {
-    q: "What licence do I need?",
+    q: "What license do I need?",
     a: "Federal rules require a commercial driver's license valid for the vehicle being operated, and a current medical examiner's certificate. Which class and which endorsements apply to a given run is something Solidify confirms with you directly.",
   },
   {

@@ -83,7 +83,8 @@ kind. There is no `input[type=file]` anywhere on the site, and QA asserts it.
 
 ## Environment
 
-See `.env.example`. The short version: `RESEND_API_KEY`, `MAIL_FROM_EMAIL`,
+See `.env.example`. Add `TURNSTILE_SECRET_KEY` + `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+for the bot gate (`turnstile.ts`; fail-closed once the secret is set). The short version: `RESEND_API_KEY`, `MAIL_FROM_EMAIL`,
 `INQUIRY_TO_EMAIL`, `NEXT_PUBLIC_SITE_URL`; optionally Upstash.
 `RESEND_API_BASE` points the mailer at a local sink and is **ignored in
 production** by design — which is why a delivery test has to run against

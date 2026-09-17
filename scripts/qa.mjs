@@ -10,7 +10,7 @@
  *   node scripts/qa.mjs [TARGET=http://localhost:3477] [ONLY_VIEWPORT]
  *
  * Screenshots land in qa/<viewport>/<page>/NN-<section>.png (gitignored).
- * Assertions are printed and summarised; exit 1 on any failure, 2 on a
+ * Assertions are printed and summarized; exit 1 on any failure, 2 on a
  * harness error. Visual review of the screenshots is a SEPARATE step —
  * DOM assertions cannot see a bad crop.
  */
@@ -173,7 +173,7 @@ const GATHER = () => {
   const meta = (n) => document.querySelector(`meta[name="${n}"]`)?.getAttribute("content") || document.querySelector(`meta[property="${n}"]`)?.getAttribute("content") || "";
   const alts = imgs.map((i) => i.getAttribute("alt") ?? null);
 
-  // Approximate contrast: text colour vs nearest opaque ancestor background.
+  // Approximate contrast: text color vs nearest opaque ancestor background.
   const textSel = "p, li, span.label, .eyebrow, h1, h2, h3, h4, dt, dd, a, button, label, summary";
   const bad = [];
   const seen = new Set();
@@ -371,7 +371,7 @@ try {
       check(`${label} no undersized buttons (>= ${lo}px)`, undersized.length === 0, undersized.map((b) => `"${b.label}" ${b.h}px`).join(", "));
       check(`${label} exactly one h1`, f.h1s.length === 1, JSON.stringify(f.h1s));
       check(`${label} sections present`, f.sections.length >= (pg.name === "privacy" || pg.name === "terms" ? 1 : pg.name === "contact" ? 2 : 3), String(f.sections.length));
-      check(`${label} no dead-centre focal point`, !f.objectPositions.includes("50% 50%"), f.objectPositions.join(" | "));
+      check(`${label} no dead-center focal point`, !f.objectPositions.includes("50% 50%"), f.objectPositions.join(" | "));
       check(`${label} no third-party scripts`, f.externalScripts.length === 0, f.externalScripts.join(", "));
       check(`${label} no iframes`, f.iframes.length === 0, f.iframes.join(", "));
       check(`${label} contrast >= 4.5:1 (approx)`, f.contrastFailures.length === 0, f.contrastFailures.join(" | "));
@@ -610,7 +610,7 @@ try {
     canvas: document.querySelectorAll("[data-hero] canvas").length,
     hiddenReveals: [...document.querySelectorAll("[data-reveal]")].filter((e) => parseFloat(getComputedStyle(e).opacity) < 0.9).length,
   }));
-  check("reduced motion: honoured by the document", rm.flagged === true);
+  check("reduced motion: honored by the document", rm.flagged === true);
   check("reduced motion: hero headline visible, not stuck hidden", Number(rm.h1) > 0.9, `opacity ${rm.h1}`);
   check("reduced motion: no WebGL layer mounted", rm.canvas === 0, String(rm.canvas));
   check("reduced motion: no reveal left invisible", rm.hiddenReveals === 0, String(rm.hiddenReveals));

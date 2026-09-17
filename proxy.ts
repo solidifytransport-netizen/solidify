@@ -10,7 +10,15 @@ import { NextResponse, type NextRequest } from "next/server";
  * a CSP violation rather than a policy reminder.
  *
  * Fonts are self-hosted by next/font, so font-src is 'self' as well.
+ *
+ * The one third-party origin, and only when it is configured: Cloudflare
+ * Turnstile, the bot gate on the forms. It needs script-src for its loader
+ * and frame-src for the widget. It does NOT need connect-src — the widget's
+ * own traffic happens inside its iframe, under its own policy — so the
+ * no-analytics guarantee above still holds with it in place.
  */
+const TURNSTILE = "https://challenges.cloudflare.com";
+const turnstile = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim());
 export function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const dev = process.env.NODE_ENV !== "production";
@@ -21,7 +29,8 @@ export function proxy(request: NextRequest) {
     "object-src 'none'",
     "frame-ancestors 'none'",
     "form-action 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ""}`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${turnstile ? ` ${TURNSTILE}` : ""}${dev ? " 'unsafe-eval'" : ""}`,
+    `frame-src ${turnstile ? TURNSTILE : "'none'"}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self'",

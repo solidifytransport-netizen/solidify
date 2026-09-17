@@ -17,7 +17,7 @@ const WEST = new Set<string>(FOCUS_STATES);
 const FOCUS = STATES.filter((s) => WEST.has(s.abbr));
 
 /**
- * The true centre of a state's outline.
+ * The true center of a state's outline.
  *
  * The path data is M/L/Z only (topojson → svg), so every number in `d` is a
  * coordinate and an exact bounding box is a pairwise min/max — no getBBox, no
@@ -47,7 +47,7 @@ const ORIGIN: Record<string, { ox: number; oy: number }> = Object.fromEntries(FO
 
 /** North-west to south-east: the order the focus block assembles in. */
 const SWEEP = [...FOCUS].sort((a, b) => ORIGIN[a.abbr].ox + ORIGIN[a.abbr].oy - (ORIGIN[b.abbr].ox + ORIGIN[b.abbr].oy));
-/** The reverse is the PAINT order: down-right first, so up-left tiles shingle on top of their neighbours, consistent with a lamp at the upper left. */
+/** The reverse is the PAINT order: down-right first, so up-left tiles shingle on top of their neighbors, consistent with a lamp at the upper left. */
 const PAINT = [...SWEEP].reverse();
 
 /**
@@ -67,7 +67,7 @@ type Params = { rest: number; hot: number; wx: number; wy: number; hwx: number; 
  * the board and lit.
  *
  * The emphasis is carried by GEOMETRY and LIGHT, in that order. Each focus
- * state scales about its own centre, so it visibly overlaps its neighbours —
+ * state scales about its own center, so it visibly overlaps its neighbors —
  * that overlap is the only thing that actually reads as "bigger" in a still
  * frame; scaling the region as one plate changes no internal relationship and
  * the eye sees nothing. Under each raised state a dark wall slides out, and a
@@ -178,7 +178,7 @@ export function CoverageMap({
   );
 
   /* Hover, in one place, so the map and the chips beside it drive the same
-     behaviour. Gated on `landed`: a chip hover while the map is still below
+     behavior. Gated on `landed`: a chip hover while the map is still below
      the fold would otherwise overwrite the entry tween and strand a tile at
      opacity 0. */
   useEffect(() => {
@@ -204,7 +204,7 @@ export function CoverageMap({
 
   const westList = FOCUS.slice().sort((a, b) => a.name.localeCompare(b.name));
   const ground = STATES.filter((s) => !WEST.has(s.abbr));
-  /* The hovered tile paints last so it rises above its neighbours — SVG has no
+  /* The hovered tile paints last so it rises above its neighbors — SVG has no
      z-index. React MOVES the keyed node rather than recreating it, so the
      inline GSAP transform survives; the key must stay `s.abbr`. */
   const painted = hover && WEST.has(hover.abbr) ? [...PAINT.filter((s) => s.abbr !== hover.abbr), hover] : PAINT;
@@ -268,7 +268,7 @@ export function CoverageMap({
                 <stop offset="100%" stopColor="#121a27" />
               </linearGradient>
 
-              {/* The side wall is the absence of light, not a colour. */}
+              {/* The side wall is the absence of light, not a color. */}
               <linearGradient id="tile-wall" x1="0" y1="0" x2="0.6" y2="1">
                 <stop offset="0%" stopColor="#0b1220" />
                 <stop offset="100%" stopColor="#02040a" />
@@ -328,7 +328,7 @@ export function CoverageMap({
 
             {/* One blurred union of the twelve, sitting ABOVE the 36 so the
                 shadow genuinely falls on the plains behind them. Only its
-                opacity is ever tweened, so the filter rasterises once. */}
+                opacity is ever tweened, so the filter rasterizes once. */}
             <g data-cast opacity="0" filter="url(#lift-drop)" pointerEvents="none">
               <g transform="translate(6 10)">
                 {FOCUS.map((s) => {

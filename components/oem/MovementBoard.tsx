@@ -269,9 +269,9 @@ export function MovementBoard({
                   <circle cx="9" cy="7" r="2.2" fill="#b3d4ff" />
                 </g>
               </svg>
-              <div className="mt-2 flex items-center justify-between">
+              <div className="mt-2 flex items-baseline justify-between gap-4">
                 <span className="spec">Generic network · not a lane map</span>
-                <span className="spec !text-[var(--text-low)]">{String(active + 1).padStart(2, "0")} / {String(MOVEMENTS.length).padStart(2, "0")}</span>
+                <span className="spec shrink-0 whitespace-nowrap !text-[var(--text-low)]">{String(active + 1).padStart(2, "0")} / {String(MOVEMENTS.length).padStart(2, "0")}</span>
               </div>
             </div>
           </div>

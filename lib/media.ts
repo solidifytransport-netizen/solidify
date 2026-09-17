@@ -11,7 +11,7 @@
  * resolution and examined through magnified crops for competitor livery, US
  * origin and identifiable people before it was admitted.
  *
- * LICENCE — Pexels / Unsplash licences and CC0: free for commercial use, no
+ * LICENSE — Pexels / Unsplash licenses and CC0: free for commercial use, no
  * model or property release. A person shown in any frame is a stock subject,
  * NOT a Solidify employee, operator or customer, and copy must never imply
  * otherwise.
@@ -28,7 +28,7 @@ export type Photo = {
   /** Basename in assets/media, without extension. */
   file: string;
   alt: string;
-  /** Focal point as [x%, y%] — the subject, measured, never dead-centre. */
+  /** Focal point as [x%, y%] — the subject, measured, never dead-center. */
   focal: [number, number];
   tone: Tone;
   /** Where it came from — for the credits record. */
@@ -191,6 +191,13 @@ export const PHOTOS: Record<string, Photo> = {
   },
   /* -- the rig itself: a loaded US auto hauler, on the road -------------- */
 
+  "hauler-solidify-highway": {
+    file: "hauler-solidify-highway",
+    alt: "An auto hauler in Solidify Transport blue livery on a highway, six vehicles loaded across both decks behind the cab, mountains and a lake beyond.",
+    focal: [70, 52],
+    tone: "light",
+    source: "Client-supplied render (Truck Main.png, 1672x941; upscaled to 2400 - see CREDITS.txt)",
+  },
   "hauler-texas-road": {
     file: "hauler-texas-road",
     alt: "A loaded auto-transport rig on the road at golden hour, cars stacked across both decks behind a conventional cab.",
@@ -257,14 +264,14 @@ export const PHOTOS: Record<string, Photo> = {
  *
  * The strongest frames sit where they are seen most. The frames that read as
  * documentation rather than as advertising - the empty deck from above, the
- * grey transit shot - are used where the layout wants ground rather than
+ * gray transit shot - are used where the layout wants ground rather than
  * subject: dimmed rails, a backdrop behind a board, the loading beat of a
  * sequence. That ordering is the art direction of this file.
  */
 
 export const SLOTS = {
   /* Home */
-  "hero-carrier": { photo: "hauler-texas-road", aspect: 16 / 9, tone: "dark", role: "HERO - the loaded rig; the WebGL scene is built on this exact file." },
+  "hero-carrier": { photo: "hauler-solidify-highway", aspect: 16 / 9, tone: "dark", role: "HERO - the client's own rig in Solidify livery; the WebGL scene is built on this exact file." },
   "lane-consumer": { photo: "deck-jeep-portrait", aspect: 4 / 5, tone: "dark", role: "Lanes - one customer vehicle, loaded and standing on the deck." },
   "lane-oem": { photo: "covers-column", aspect: 4 / 5, tone: "light", role: "Lanes - new-vehicle inventory under transit covers." },
   "lane-operator": { photo: "cab-texas-front", aspect: 4 / 5, tone: "dark", role: "Lanes - the truck an owner-operator runs." },

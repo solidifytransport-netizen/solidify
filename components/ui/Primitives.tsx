@@ -4,7 +4,7 @@ import { COMPANY, APPLY_URL } from "@/lib/site";
 
 export type Surface = "deep" | "navy" | "graphite" | "gunmetal" | "steel" | "ice";
 
-/** A themed section. Declares its surface; every child resolves colour from it. */
+/** A themed section. Declares its surface; every child resolves color from it. */
 export function Section({
   children,
   surface = "navy",
@@ -24,7 +24,7 @@ export function Section({
   flush?: boolean;
   as?: "section" | "div" | "header" | "footer";
   ariaLabelledBy?: string;
-  /** Which heading pattern this section uses — QA asserts neighbours differ. */
+  /** Which heading pattern this section uses — QA asserts neighbors differ. */
   head?: HeadPattern;
 }) {
   return (
@@ -66,7 +66,18 @@ export function Lines({ text }: { text: string | readonly string[] }) {
       {text.map((line, i) => (
         <span key={i}>
           {line}
-          {i < text.length - 1 && <br />}
+          {/* The space matters. Without it the element's textContent runs the
+              lines together — "Nationwide autotransport,carrier-direct." —
+              and that is exactly what SplitText copies into the aria-label
+              it adds for screen readers, what find-in-page searches, and
+              what a crawler extracts. A trailing space before <br> collapses
+              visually, so the layout is unchanged. */}
+          {i < text.length - 1 && (
+            <>
+              {" "}
+              <br />
+            </>
+          )}
         </span>
       ))}
     </>

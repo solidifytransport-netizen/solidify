@@ -15,12 +15,12 @@ places it in the United States. "Nothing proves otherwise" was not accepted.
 
 Standard applied to text: manufacturer badges (Toyota, Jeep, Chevrolet, Volvo,
 Cottrell, BBS, Pirelli, Mercedes-AMG, Cadillac, Maserati) are allowed. Private
-licence plates are allowed and were used as US evidence. Unit numbers and
+license plates are allowed and were used as US evidence. Unit numbers and
 regulatory panels were NOT tolerated even without a company name: where one
 sat on a croppable strip the master was cropped and the crop is recorded
 here; where it could not be cropped out the frame was rejected.
 
-Licence: Pexels Licence / Unsplash Licence (free for commercial use, no
+License: Pexels License / Unsplash License (free for commercial use, no
 attribution required, no model or property release). Unsplash+ (premium)
 frames were treated as unavailable. Any person shown is a stock subject and
 must never be captioned as a Solidify employee, operator or customer.
@@ -105,7 +105,7 @@ ADOPTED MASTERS
    US origin: Kansas state plate on the trailer (seen before the crop);
    Volvo VNL conventional power unit visible in the companion frame from the
    same shoot; source caption places the load on I-71 en route to New Jersey.
-   Focal: [66, 58] (centre of the loaded upper deck). Tone: light.
+   Focal: [66, 58] (center of the loaded upper deck). Tone: light.
    Person: none.
 
 2. carrier-deck-socal.jpg  (2400x1180)
@@ -186,9 +186,9 @@ ADOPTED MASTERS
 7. showroom-mc20.jpg  (2400x3134)
    Source: Pexels 12565887 — Jacob Moore (Colorado Springs, CO).
    Shows: a white Maserati MC20 on the floor of a glass-walled showroom, a
-   grey Maserati beside it, two customers in the background.
+   gray Maserati beside it, two customers in the background.
    Vetting: tiles read. No dealer name anywhere in frame (a "SOLD" tag on the
-   windscreen, manufacturer badges only). Chosen over Unsplash bC5NNbwuoB0
+   windshield, manufacturer badges only). Chosen over Unsplash bC5NNbwuoB0
    (Nashville) precisely because that frame carried a legible "Nelson Mazda"
    plate frame and door sticker naming a real dealership.
    US origin: photographer's stated US base only (no plate in frame). Admitted
@@ -201,16 +201,16 @@ ADOPTED MASTERS
    United States.
    Shows: a hand with a microfibre cloth at a polished BBS alloy wheel on a
    red car, close detail.
-   Vetting: "BBS" centre cap and tyre sidewall text are manufacturer marks;
+   Vetting: "BBS" center cap and tire sidewall text are manufacturer marks;
    no other text. The person is an arm and hand only, not identifiable.
    US origin: stated location on the source page.
-   Focal: [61, 58] (the wheel centre and hand). Tone: dark.
+   Focal: [61, 58] (the wheel center and hand). Tone: dark.
    Person: YES — hand and forearm only.
 
 9. detail-amg-wheel.jpg  (2400x3600)
    Source: Unsplash FsBbavP9YA4 — Jakob Rosen (@jakobnoahrosen, Denver, CO).
    Shows: a black five-spoke Mercedes-AMG wheel with a red AMG brake caliper
-   and a Pirelli P Zero tyre, close detail.
+   and a Pirelli P Zero tire, close detail.
    Vetting: Mercedes star, AMG, Pirelli — manufacturer marks only.
    US origin: no geographic content in frame; photographer's stated Denver
    base only. Admitted as a context-free product detail and recorded as such.
@@ -242,10 +242,10 @@ ADOPTED MASTERS
 12. road-death-valley.jpg  (2400x1350)
     Source: Pexels 33569802 — Aomata. Stated location: California, United
     States (Death Valley / Panamint).
-    Shows: a straight two-lane highway with a yellow centre line running
+    Shows: a straight two-lane highway with a yellow center line running
     toward desert mountains, no vehicles.
     Vetting: distant road signs unreadable; no vehicles, no people.
-    US origin: stated location; US yellow centre-line / white edge-line
+    US origin: stated location; US yellow center-line / white edge-line
     marking convention.
     Focal: [50, 68] (the road's vanishing point). Tone: light.
     Person: none.
@@ -271,7 +271,7 @@ ADOPTED MASTERS
 
 
 15. lot-chevrolet-covers.jpg  (2400x1600)
-    Source: Unsplash 1h491Giz9CU — Rob Dean (@robhdean). Unsplash Licence.
+    Source: Unsplash 1h491Giz9CU — Rob Dean (@robhdean). Unsplash License.
     Shows: rows of new Chevrolet Trailblazer / Trax SUVs on a staging lot,
     white protective transit covers on every roof, window stickers still on
     the glass, shot from an elevated angle in hard sunlight.
@@ -376,7 +376,7 @@ Carriers / loading
   content.
 - Unsplash Um0OnHRvncI, XWJC1RfCL4M, IuhWU2Q-5G0, kP9aKbrT56M, IxvMeovmRmk,
   UQffr-a_t1M, cQpQWhyg0P8, 0ubgQTMQSgA, xfcSqXx85M4, grKBtk4u7UM: UNAVAILABLE
-  — Getty / Unsplash+ premium, not under the free licence.
+  — Getty / Unsplash+ premium, not under the free license.
 
 Drivers / people
 - Pexels 14797991 (Sikh driver in a cab): REJECT — bearded man in cab; the
@@ -449,7 +449,7 @@ freight).
 PHOTOGRAPHY STILL WANTED (shoot brief for Solidify)
 -----------------------------------------------------
 
-No free-licence, livery-free, US-verified frame exists for these; the site
+No free-license, livery-free, US-verified frame exists for these; the site
 carries them with the Blueprint drawing system until Solidify supplies its
 own photography. When it does, only lib/media.ts changes.
 
@@ -486,7 +486,7 @@ sweeps before it:
                    vehicles and not US
   pexels 16668923  Scania against red rock - European equipment
 
-CONCLUSION, now on the fourth attempt: there is no free-licence photograph of a
+CONCLUSION, now on the fourth attempt: there is no free-license photograph of a
 loaded US auto hauler being worked - loading, unloading, strapping down, or a
 handover - in the libraries reachable from here. The answer is NOT to lower the
 origin bar and NOT to draw it. It is to compose from what has been vetted: the
@@ -500,7 +500,7 @@ FIFTH sweep (this revision) - the ceiling finally broke
 --------------------------------------------------------
 Pixabay had never been tried. It carries the exact frame the client sent as a
 reference: a loaded auto-transport rig photographed in Houston, Texas, with a
-Texas plate (R52-0240) legible in frame, under the Pixabay Content Licence.
+Texas plate (R52-0240) legible in frame, under the Pixabay Content License.
 
   hauler-texas-road   <- pixabay 6839728 (three-quarter, golden hour)
   hauler-texas-front  <- pixabay 6839726 (head-on, same rig, same shoot)
@@ -529,3 +529,32 @@ their own photography - it drops straight into assets/media under the same
 names and everything downstream regenerates.
 
 The shoot brief in this file still stands and is still the real fix.
+
+
+HERO — CLIENT-SUPPLIED RENDER (2026-09-17)
+==========================================
+
+  hauler-solidify-highway  <- client file "Truck Main.png" (1672x941, PNG)
+
+SOURCE: supplied by the client for the home hero. It is a render, not a
+photograph: the load is six generic EV crossovers and the cab is a generic
+long-nose conventional. It carries the client's own blue livery with
+SOLIDIFY TRANSPORT LLC on the cab door. No license question arises; it is the
+client's own asset.
+
+DOOR PANEL: beneath the company name the door carries two further lines in
+the shape of a USDOT / MC panel. They are pseudo-text — the render did not
+produce legible digits — and at 2400 wide the panel is ~60px across, so no
+number can be read at any served size. This site does not publish a USDOT or
+MC number because neither has been confirmed by the client, and this frame
+does not change that: it shows no readable number. If the client later
+supplies a version with a real panel, the number on it must be confirmed
+before that version ships.
+
+RESOLUTION: 1672 wide is below what a full-bleed hero at 1920+ needs, so the
+master was upscaled to 2400 (lanczos3, light unsharp), exactly as the two
+Texas frames were. Under the hero's dark grade and scrims it holds; on a 4K
+display at 100% it is soft. A 4000px+ export of the same render would drop in
+under the same name and everything downstream regenerates.
+
+ROLE: hero-carrier only. hauler-texas-road stays on driver-hero.

@@ -21,7 +21,7 @@ type Panel = {
  *
  * Six photographic panels on one pinned stage. Vertical scroll drives the
  * strip sideways; the panel nearest the reading line expands (GSAP Flip),
- * its photograph settles from a slow push-in, and the neighbours compress
+ * its photograph settles from a slow push-in, and the neighbors compress
  * and cool. A route line under the strip carries one node per panel.
  *
  * Every panel is a photograph. Nothing here is a drawing.
@@ -211,8 +211,8 @@ export function Situations() {
             It used to be `flex-1` next to a `whitespace-nowrap` label whose
             text changes with the active step. A fixed-width sibling in a flex
             row sets the rail's width, so every step change re-measured the
-            rail and shifted the nodes, the fill and the travelling head
-            sideways — and the line never sat centred in the section, because
+            rail and shifted the nodes, the fill and the traveling head
+            sideways — and the line never sat centered in the section, because
             the label was eating the right fifth of it. The readout is now
             left-aligned under the rail, so it grows rightward from a fixed
             origin and moves nothing. */}

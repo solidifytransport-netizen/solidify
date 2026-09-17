@@ -114,7 +114,7 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
       });
 
       mm.add(MQ.mobile, () => {
-        // sticky media: the beat whose copy is nearest the viewport centre is active
+        // sticky media: the beat whose copy is nearest the viewport center is active
         let active = -1;
         setActive(0, true);
         const items = el.querySelectorAll<HTMLElement>("[data-beat-copy-m]");
@@ -302,7 +302,7 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
                 <span className="spec !text-[rgba(179,212,255,0.9)]">{b.spec}</span>
                 <h3 className="display-sm">{b.title}</h3>
                 <p className="lead">{b.text}</p>
-                <dl className="plate plate-steel grid grid-cols-[minmax(6rem,8rem)_1fr] gap-x-6 gap-y-3 px-5 py-4">
+                <dl className="plate plate-steel grid grid-cols-[minmax(5.5rem,6.5rem)_1fr] gap-x-4 gap-y-3 px-5 py-4 min-[400px]:grid-cols-[minmax(6rem,8rem)_1fr] min-[400px]:gap-x-6">
                   {b.readout.map((r) => (
                     <Fragment key={r.label}>
                       <dt className="spec self-center">{r.label}</dt>

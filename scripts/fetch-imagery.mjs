@@ -25,7 +25,7 @@
  *   [{ "src": "pexels", "id": "34539243", "note": "car carrier on road" },
  *    { "src": "unsplash", "id": "q36Yp9RpHa0", "note": "..." }]
  *
- * LICENCE: Pexels and Unsplash licences are free for commercial use with no
+ * LICENSE: Pexels and Unsplash licenses are free for commercial use with no
  * attribution required, and grant NO model/property release. People shown
  * are stock subjects and must never be captioned as Solidify staff.
  */
@@ -63,7 +63,7 @@ async function download(src, id, w) {
   if (!res.ok) return null;
   const buf = Buffer.from(await res.arrayBuffer());
   if (buf.length < 4000) return null;
-  // Normalise to JPEG so downstream tooling is uniform.
+  // Normalize to JPEG so downstream tooling is uniform.
   try {
     await sharp(buf).rotate().jpeg({ quality: 92 }).toFile(file);
   } catch {

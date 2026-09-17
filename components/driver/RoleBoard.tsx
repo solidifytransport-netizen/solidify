@@ -183,7 +183,7 @@ export function RoleBoard() {
               </RevealText>
               <Reveal>
                 <p className="lead">
-                  If you have run dry freight, this is a different job with the same licence. Four things make it different, and all four are yours to get right.
+                  If you have run dry freight, this is a different job with the same license. Four things make it different, and all four are yours to get right.
                 </p>
               </Reveal>
             </div>

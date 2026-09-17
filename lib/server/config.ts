@@ -37,6 +37,10 @@ export interface ServerConfig {
 
   upstash: { url: string; token: string } | null;
 
+  /** Cloudflare Turnstile secret. When set, every form submission must carry a valid token. */
+  turnstileSecret: string | null;
+  turnstileConfigured: boolean;
+
   inquiryConfigured: boolean;
   inquiryReasons: string[];
 }
@@ -124,12 +128,20 @@ function build(): ServerConfig {
   const upstashToken = env("UPSTASH_REDIS_REST_TOKEN");
   const upstash = upstashUrl && upstashToken && parseOrigin(upstashUrl) ? { url: upstashUrl.replace(/\/+$/, ""), token: upstashToken } : null;
 
+  /* ── bot gate ────────────────────────────────────────────────────────── */
+  const turnstileSecret = env("TURNSTILE_SECRET_KEY");
+  const turnstileSiteKey = env("NEXT_PUBLIC_TURNSTILE_SITE_KEY");
+  const turnstileConfigured = turnstileSecret !== null && turnstileSiteKey !== null;
+  const turnstileReasons: string[] = [];
+  if (turnstileSecret !== null && turnstileSiteKey === null) turnstileReasons.push("TURNSTILE_SECRET_KEY is set but NEXT_PUBLIC_TURNSTILE_SITE_KEY is not: forms will refuse every submission");
+  if (turnstileSecret === null && turnstileSiteKey !== null) turnstileReasons.push("NEXT_PUBLIC_TURNSTILE_SITE_KEY is set but TURNSTILE_SECRET_KEY is not: the widget renders and its token is never checked");
+
   /* ── verdicts ────────────────────────────────────────────────────────── */
   const originReasons = allowedOrigins.length === 0 ? ["no allowed origin: set NEXT_PUBLIC_SITE_URL to the public https origin"] : [];
 
 
   const inquiryConfigured = mailConfigured && inquiryToEmail !== null && allowedOrigins.length > 0;
-  const inquiryReasons = inquiryConfigured ? [] : [...mailReasons, ...(inquiryToEmail === null ? ["INQUIRY_TO_EMAIL is not set"] : []), ...originReasons];
+  const inquiryReasons = [...(inquiryConfigured ? [] : [...mailReasons, ...(inquiryToEmail === null ? ["INQUIRY_TO_EMAIL is not set"] : []), ...originReasons]), ...turnstileReasons];
 
   return {
     isVercel,
@@ -142,6 +154,8 @@ function build(): ServerConfig {
     resendApiBase,
     mailConfigured,
     upstash,
+    turnstileSecret,
+    turnstileConfigured,
     inquiryConfigured,
     inquiryReasons,
   };

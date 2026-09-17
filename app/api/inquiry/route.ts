@@ -6,6 +6,8 @@ import { AppError } from "@/lib/server/errors";
 import { fail, json, limit, requireInquiryConfigured } from "@/lib/server/guards";
 import { log } from "@/lib/server/log";
 import { formatInquiryEmail, getMailer } from "@/lib/server/mail";
+import { clientIp } from "@/lib/server/ratelimit";
+import { verifyTurnstile } from "@/lib/server/turnstile";
 import { readJsonLimited } from "@/lib/server/validate";
 
 export const runtime = "nodejs";
@@ -16,7 +18,7 @@ const MIN_FILL_MS = 2500;
 /**
  * POST /api/inquiry  (JSON, one of the inquirySchema lanes)
  *   200 { ok: true, reference }
- *   422 { error: "validation_failed", fields }
+ *   422 { error: "validation_failed", fields }   (also the honeypot, the timing check and the bot gate)
  *   502 { error: "delivery_failed", message }
  *   503 { error: "inquiry_not_configured", message }
  *
@@ -51,6 +53,17 @@ export async function POST(req: Request) {
       }
     }
 
+    /* The bot gate, last of the cheap checks and before anything is sent.
+       A no-op until TURNSTILE_SECRET_KEY is set; a hard refusal after. */
+    const gate = await verifyTurnstile(inquiry.turnstileToken, clientIp(req));
+    if (!gate.ok) {
+      log.warn("inquiry: turnstile refused", { reason: gate.reason });
+      return json(
+        { error: "validation_failed", fields: { turnstileToken: "We could not confirm you are not a bot. Please try again." } },
+        { status: 422 },
+      );
+    }
+
     const clean = stripAntiSpam(inquiry);
     const reference = newReference();
     const receivedAt = new Date().toISOString();
@@ -78,5 +91,6 @@ function stripAntiSpam(inquiry: Inquiry): Inquiry {
   const copy: Record<string, unknown> = { ...inquiry };
   delete copy.website;
   delete copy.startedAt;
+  delete copy.turnstileToken;
   return copy as Inquiry;
 }

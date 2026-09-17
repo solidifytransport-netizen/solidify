@@ -27,7 +27,7 @@ const MANIFEST = join(ROOT, "lib", "images.json");
  * On Vercel the ladder is written into .next/cache, which persists between
  * builds, and mirrored into public/. The mtime skip below then makes every
  * build after the first take seconds instead of minutes. `--cache` opts into
- * the same behaviour locally.
+ * the same behavior locally.
  */
 const useCache = Boolean(process.env.VERCEL) || process.argv.includes("--cache");
 const OUT = useCache ? join(ROOT, ".next", "cache", "media-gen") : PUBLIC_OUT;

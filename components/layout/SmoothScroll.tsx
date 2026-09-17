@@ -43,7 +43,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
     root.classList.toggle("reduced-motion", mql.matches);
     root.classList.remove("no-js");
 
-    // Honour a change mid-session: park every infinite tween at its start.
+    // Honor a change mid-session: park every infinite tween at its start.
     const onChange = (e: MediaQueryListEvent) => {
       root.classList.toggle("reduced-motion", e.matches);
       if (!e.matches) return;

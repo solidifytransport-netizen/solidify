@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import clsx from "clsx";
 import { gsap, EASE, MQ } from "@/lib/motion";
-import { COMPANY, ADDRESS_LINES, FOOTER_LINKS, CLAIMS, CLIENT_DATA, has, CTA } from "@/lib/site";
+import { COMPANY, ADDRESS_LINES, FOOTER_LINKS, CLAIMS, CLIENT_DATA, has, CTA, SITE_CREDIT } from "@/lib/site";
 import { Plate } from "@/components/ui/Plate";
 import { Button } from "@/components/ui/Button";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
@@ -211,12 +211,16 @@ export function Closing({
               {has("usdot") && <> USDOT {CLIENT_DATA.usdot}.</>}
               {has("mc") && <> MC {CLIENT_DATA.mc}.</>}
             </span>
-            <span className="flex flex-wrap gap-x-6 gap-y-1">
+            <span className="flex flex-wrap items-center gap-x-6 gap-y-1">
               {FOOTER_LINKS.legal.map((l) => (
                 <Link key={l.href} href={l.href} className="foot-link">
                   {l.label}
                 </Link>
               ))}
+              <a href={SITE_CREDIT.href} target="_blank" rel="noopener noreferrer" className="foot-link text-[var(--text-low)]" data-site-credit>
+                {SITE_CREDIT.label}
+                <span className="sr-only"> (opens in a new tab)</span>
+              </a>
             </span>
           </div>
         </div>

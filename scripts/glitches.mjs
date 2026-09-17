@@ -15,7 +15,7 @@
  *   RAIL WIDTH     a scroll-progress rail whose width is set by a sibling.
  *                  Both pinned rails were `flex-1` next to a nowrap label whose
  *                  text changed with the active step, so the line and its nodes
- *                  shifted sideways as you scrolled and never sat centred.
+ *                  shifted sideways as you scrolled and never sat centered.
  *   RAIL BREAKS    a rail with a chunk of the section's own background
  *                  painted over it. One was deliberate — it marked where the
  *                  owner-operator route leaves Solidify's systems — but it
@@ -29,6 +29,19 @@
  *                  space reserved for it. This is how a 40px header mark came
  *                  to render 18px of logo.
  *   PAGE WIDTH     anything forcing a horizontal scrollbar.
+ *   CLIPPED TEXT   a text-bearing element whose box runs past the right edge
+ *                  of the viewport, or whose own text is wider than its
+ *                  overflow-hidden box with no ellipsis to say so. The page
+ *                  can pass the scrollbar check and still be cutting words
+ *                  off, because sections clip their own overflow.
+ *   TOO WIDE       any element wider than the viewport itself.
+ *   TAP TARGETS    on phones, a link, button or field smaller than 24px on
+ *                  either side (WCAG 2.5.8). 44px is the comfortable size and
+ *                  is reported as a count, not a failure.
+ *   TINY TEXT      on phones, visible text computed below 12px.
+ *
+ * Nineteen viewports, 320 to 2560 wide, because "responsive" means every
+ * width in between the ones a designer checked, not the four in a spec.
  *
  * An earlier version compared every flex/grid row on the page and drowned the
  * real findings in ~70 false positives: a two-column editorial split with a
@@ -43,13 +56,26 @@ import { chromium } from "playwright-core";
 const TARGET = (process.argv[2] || process.env.TARGET || "http://localhost:3478").replace(/\/$/, "");
 const ROUTES = ["/", "/car-shipping", "/oem-dealerships", "/become-a-driver", "/owner-operators", "/about", "/contact", "/terms", "/privacy"];
 const VIEWPORTS = [
+  [2560, 1440],
   [1920, 1080],
   [1680, 1050],
   [1536, 864],
   [1440, 900],
   [1366, 768],
   [1280, 800],
+  [1180, 820],
+  [1024, 768],
+  [912, 1368],
+  [820, 1180],
+  [768, 1024],
+  [600, 960],
+  [540, 720],
+  [430, 932],
+  [414, 896],
   [390, 844],
+  [375, 667],
+  [360, 740],
+  [320, 568],
 ];
 
 /** Every horizontal card track in the codebase. Add new ones here. */
@@ -63,7 +89,7 @@ const check = (label, ok, detail = "") => {
 };
 
 const audit = (trackSel) => {
-  const out = { tracks: [], grids: [], rails: [], breaks: [], bar: [], lockups: [], page: null };
+  const out = { tracks: [], grids: [], rails: [], breaks: [], bar: [], lockups: [], clipped: [], wide: [], taps: [], tiny: [], comfy: 0, page: null };
   out.page = { scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth };
 
   const groupOf = (el) => el.closest("[data-section]")?.dataset.section || el.parentElement?.id || "?";
@@ -151,6 +177,76 @@ const audit = (trackSel) => {
     if (off > 0.03) out.lockups.push({ src: img.getAttribute("src"), box: [Math.round(r.width), Math.round(r.height)], off: `${Math.round(off * 100)}%` });
   }
 
+  /* ---- clipped text, over-wide boxes, tap targets, tiny text ------------ */
+  const vw = document.documentElement.clientWidth;
+  const phone = vw < 500;
+  const visible = (el) => {
+    const cs = getComputedStyle(el);
+    if (cs.display === "none" || cs.visibility === "hidden" || cs.opacity === "0") return false;
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  };
+  const hasOwnText = (el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.nodeValue.trim().length > 1);
+  const label = (el) => (el.textContent || el.getAttribute("aria-label") || el.tagName).replace(/\s+/g, " ").trim().slice(0, 40);
+  /* a card in a pinned horizontal track sits off-screen until the pin scrolls
+     it in; that is the choreography, and the track has its own checks above */
+  const inTrack = (el) => el.closest(trackSel) !== null;
+  const inScroller = (el) => {
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      const o = getComputedStyle(p).overflowX;
+      if (o === "auto" || o === "scroll") return true;
+    }
+    return false;
+  };
+  const decorative = (el) => el.closest("[aria-hidden='true'], svg, canvas, [data-slat], picture, .frame") !== null;
+  /* visually-hidden text is clipped on purpose: that is the technique */
+  const srOnly = (el) => {
+    for (let p = el; p && p !== document.body; p = p.parentElement) {
+      const c = getComputedStyle(p);
+      if (p.classList.contains("sr-only") || (c.position === "absolute" && parseFloat(c.width) <= 1 && parseFloat(c.height) <= 1) || c.clip === "rect(0px, 0px, 0px, 0px)") return true;
+    }
+    return false;
+  };
+  const isScroller = (el) => /auto|scroll/.test(getComputedStyle(el).overflowX);
+  /* WCAG 2.5.8: a link inside a sentence is constrained by the line height of the text around it */
+  const inSentence = (el) => getComputedStyle(el).display === "inline" && [...el.parentElement.childNodes].some((n) => n.nodeType === 3 && n.nodeValue.trim().length > 1);
+  /* a radio or checkbox is tapped through its label */
+  const target = (el) => (/^(radio|checkbox)$/.test(el.type) && (el.labels?.[0] || el.closest("label"))) || el;
+
+  for (const el of document.querySelectorAll("main *, header *, footer *")) {
+    if (!visible(el) || decorative(el) || srOnly(el)) continue;
+    const r = el.getBoundingClientRect();
+    const cs = getComputedStyle(el);
+
+    if (hasOwnText(el)) {
+      /* clipped by an ancestor that hides overflow: the plate, not the viewport */
+      if (!inScroller(el) && !inTrack(el)) {
+        for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+          const pc = getComputedStyle(p);
+          if (/hidden|clip/.test(pc.overflowX)) {
+            const pr = p.getBoundingClientRect();
+            const over = Math.round(r.right - pr.right);
+            if (over > 1) out.clipped.push({ where: groupOf(el), text: label(el), by: over, kind: `clipped by <${p.tagName.toLowerCase()} class="${(p.className || "").toString().slice(0, 30)}">` });
+            break;
+          }
+        }
+      }
+      if (r.right > vw + 1 && !inScroller(el) && !inTrack(el)) out.clipped.push({ where: groupOf(el), text: label(el), by: Math.round(r.right - vw), kind: "past the viewport edge" });
+      if (cs.overflowX === "hidden" && cs.textOverflow !== "ellipsis" && el.scrollWidth > el.clientWidth + 2 && cs.whiteSpace === "nowrap")
+        out.clipped.push({ where: groupOf(el), text: label(el), by: el.scrollWidth - el.clientWidth, kind: "wider than its box" });
+      if (phone && parseFloat(cs.fontSize) < 12 && !el.closest(".sr-only")) out.tiny.push({ where: groupOf(el), text: label(el), size: cs.fontSize });
+    }
+    if (r.width > vw + 2 && !inScroller(el) && !isScroller(el) && cs.position !== "fixed") out.wide.push({ where: groupOf(el), tag: el.tagName.toLowerCase(), cls: (el.className?.baseVal ?? el.className ?? "").toString().slice(0, 40), width: Math.round(r.width) });
+  }
+  if (phone) {
+    for (const el of document.querySelectorAll("main a, main button, main input, main select, main textarea, main [role='button'], header a, header button, footer a, footer button")) {
+      if (!visible(el) || srOnly(el) || inSentence(el)) continue;
+      const r = target(el).getBoundingClientRect();
+      if (r.width < 24 || r.height < 24) out.taps.push({ where: groupOf(el), text: label(el), size: `${Math.round(r.width)}x${Math.round(r.height)}` });
+      else if (r.width >= 44 && r.height >= 44) out.comfy++;
+    }
+  }
+
   return out;
 };
 
@@ -179,6 +275,12 @@ try {
       check(`${at} rails are continuous`, r.breaks.length === 0, r.breaks.map((x) => `${x.where}: ${x.width}px of ${x.fill} painted over the line`).join(" | "));
       check(`${at} nav bar items keep a gap`, r.bar.length === 0, r.bar.map((x) => `${x.after} → ${x.before}: ${x.gap}px`).join(" | "));
       check(`${at} brand lockups fill their box`, r.lockups.length === 0, r.lockups.map((x) => `${x.src} drawn in ${x.box[0]}x${x.box[1]}, ${x.off} off its aspect`).join(" | "));
+      check(`${at} no text is clipped`, r.clipped.length === 0, r.clipped.slice(0, 4).map((x) => `${x.where}: "${x.text}" ${x.kind} by ${x.by}px`).join(" | ") + (r.clipped.length > 4 ? ` (+${r.clipped.length - 4})` : ""));
+      check(`${at} nothing is wider than the viewport`, r.wide.length === 0, r.wide.slice(0, 4).map((x) => `${x.where}: <${x.tag} class="${x.cls}"> ${x.width}px`).join(" | ") + (r.wide.length > 4 ? ` (+${r.wide.length - 4})` : ""));
+      if (w < 500) {
+        check(`${at} tap targets are at least 24px`, r.taps.length === 0, r.taps.slice(0, 4).map((x) => `${x.where}: "${x.text}" ${x.size}`).join(" | ") + (r.taps.length > 4 ? ` (+${r.taps.length - 4})` : ""));
+        check(`${at} no text below 12px`, r.tiny.length === 0, r.tiny.slice(0, 4).map((x) => `${x.where}: "${x.text}" ${x.size}`).join(" | ") + (r.tiny.length > 4 ? ` (+${r.tiny.length - 4})` : ""));
+      }
     }
     await ctx.close();
   }

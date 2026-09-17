@@ -5,7 +5,7 @@
  * There is no store and no encryption key any more — this site keeps no
  * submission record. What a local run needs is an access code, a session
  * secret, and somewhere for mail to go. RESEND_API_BASE points the mailer at
- * a local sink (see scripts/mail-sink.mjs), which is honoured in
+ * a local sink (see scripts/mail-sink.mjs), which is honored in
  * non-production only, so "delivery succeeded" still means a real 2xx.
  *
  *   node scripts/local-env.mjs            write .env.local, print the code

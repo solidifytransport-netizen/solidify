@@ -85,9 +85,9 @@ export default function ContactPage() {
                   <div className="flex flex-col gap-1">
                     <span className="label">Office</span>
                     <span className="body !text-[var(--text-hi)]">
-                      {COMPANY.legalName}
+                      {COMPANY.legalName}{" "}
                       <br />
-                      {ADDRESS_LINES[0]}
+                      {ADDRESS_LINES[0]}{" "}
                       <br />
                       {ADDRESS_LINES[1]}
                     </span>

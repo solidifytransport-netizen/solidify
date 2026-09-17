@@ -19,7 +19,7 @@ import scene from "@/lib/hero-scene.json";
  * photograph that is actually in place.
  *
  * The mask PNG still carries R (hauler) and G (road) because scripts/masks.mjs
- * rasterises the polygons in lib/hero-scene.json unconditionally; only the B
+ * rasterizes the polygons in lib/hero-scene.json unconditionally; only the B
  * channel (depth) is sampled now.
  *
  * Never mounted under reduced motion or without WebGL — the caller gates it

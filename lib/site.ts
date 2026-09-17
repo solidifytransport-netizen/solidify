@@ -112,6 +112,9 @@ export const CTA = {
   apply: { href: "/owner-operators#apply", label: "Start an application" },
 } as const;
 
+/** The studio credit in the footer's legal row. External, opens in a new tab. */
+export const SITE_CREDIT = { label: "Site by Syncore", href: "https://syncoretech.com/" } as const;
+
 export const FOOTER_LINKS = {
   services: [
     { href: "/car-shipping", label: "Car Shipping" },

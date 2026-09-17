@@ -45,7 +45,7 @@ const SECTIONS: readonly Clause[] = [
   {
     h: "What this website is",
     p: [
-      "This site describes Solidify's vehicle transport services and provides forms for requesting a quote, making a commercial inquiry and enquiring about driving.",
+      "This site describes Solidify's vehicle transport services and provides forms for requesting a quote, making a commercial inquiry and inquiring about driving.",
       "The content on this site is provided for information. It is kept accurate to the best of our knowledge, but it is not professional advice and it may change without notice.",
     ],
   },
@@ -74,16 +74,16 @@ const SECTIONS: readonly Clause[] = [
     ],
   },
   {
-    h: "Enquiring about driving",
+    h: "Inquiring about driving",
     p: [
-      "Sending your details through the driver form on this site is an enquiry, not an application for a specific position, and it does not create an offer of work or any obligation on either side.",
+      "Sending your details through the driver form on this site is an inquiry, not an application for a specific position, and it does not create an offer of work or any obligation on either side.",
       "Terms of any driving engagement, including pay and the requirements that apply to it, are discussed and agreed directly with Solidify.",
     ],
   },
   {
     h: "Acceptable use",
     p: [
-      "Use this site lawfully and for its intended purpose. Do not attempt to gain unauthorised access to any part of it, interfere with its operation or security, submit automated or fraudulent inquiries, or use it to send unsolicited commercial messages.",
+      "Use this site lawfully and for its intended purpose. Do not attempt to gain unauthorized access to any part of it, interfere with its operation or security, submit automated or fraudulent inquiries, or use it to send unsolicited commercial messages.",
       "We may restrict access where use of the site is abusive, automated or unlawful. The forms on this site are rate limited as a matter of course.",
     ],
   },

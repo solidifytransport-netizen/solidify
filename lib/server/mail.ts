@@ -93,7 +93,7 @@ export function getMailer(): Mailer | null {
 const LANE_LABEL: Record<Inquiry["lane"], string> = {
   vehicle: "Vehicle shipping quote",
   oem: "OEM / dealership inquiry",
-  driver: "Driver enquiry",
+  driver: "Driver inquiry",
 };
 
 /** Nothing built in this module is ever logged; this is here to say so once. */
@@ -138,8 +138,12 @@ export function formatInquiryEmail(inquiry: Inquiry, reference: string, received
   }
   lines.push("");
   lines.push("Sent by the Solidify Transport website inquiry form.");
+  /* The name is user input. It reaches the provider as JSON, so a CR/LF
+     cannot split a header, but a subject is still no place for one, and 150
+     characters is more than any name needs. */
+  const name = String(inquiry.name).replace(/[\r\n\t]+/g, " ").trim().slice(0, 80);
   return {
-    subject: `[Solidify] ${LANE_LABEL[inquiry.lane]} — ${inquiry.name} (${reference})`,
+    subject: `[Solidify] ${LANE_LABEL[inquiry.lane]} — ${name} (${reference})`.slice(0, 150),
     text: lines.join("\n"),
   };
 }

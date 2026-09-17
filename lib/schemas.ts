@@ -76,6 +76,8 @@ export const optionalZipSchema = optionalPattern(ZIP_RE, "ZIP must be 5 digits."
 const antiSpam = {
   website: z.string().max(0, "Invalid submission.").optional().or(z.literal("")),
   startedAt: z.coerce.number().optional(),
+  /** Cloudflare Turnstile token; required by the server when the gate is configured. */
+  turnstileToken: z.string().max(2048).optional(),
 };
 
 /* ────────────────────────────────────────────────────────────── inquiries ── */
@@ -117,7 +119,7 @@ export const oemInquirySchema = z.object({
 });
 
 /**
- * A driver enquiring about running SOLIDIFY'S equipment.
+ * A driver inquiring about running SOLIDIFY'S equipment.
  *
  * Every field here is a QUESTION, never a published requirement: Solidify has
  * not confirmed hiring minimums, so the site asks and does not assert. `cdl`
@@ -130,7 +132,7 @@ export const driverInquirySchema = z.object({
   phone: phoneSchema,
   email: emailSchema,
   basedIn: optionalText("Where you are based", 120),
-  cdl: z.enum(["class-a", "class-b", "other", "none"], { message: "Tell us which licence you hold." }),
+  cdl: z.enum(["class-a", "class-b", "other", "none"], { message: "Tell us which license you hold." }),
   experience: optionalText("Driving experience", 200),
   notes: optionalText("Notes", 1200),
   ...antiSpam,

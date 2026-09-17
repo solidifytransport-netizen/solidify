@@ -171,8 +171,8 @@ export function Header() {
           style={{ height: "var(--nav-h)" }}
           data-nav-bar
         >
-          <Link href="/" aria-label={`${COMPANY.name} — home`} className="relative z-10 flex shrink-0 items-center">
-            <Logo variant="horizontal" priority className="h-[26px] w-auto md:h-[30px] xl:h-[34px]" />
+          <Link href="/" aria-label={`${COMPANY.name} — home`} className="relative z-10 flex min-h-11 shrink-0 items-center">
+            <Logo variant="horizontal" priority className="h-[22px] w-auto min-[400px]:h-[26px] md:h-[30px] xl:h-[34px]" />
           </Link>
 
           {/* The inline nav needs 1280, not 1024.

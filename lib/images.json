@@ -266,6 +266,24 @@
       "jpg"
     ]
   },
+  "hauler-solidify-highway": {
+    "width": 2400,
+    "height": 1351,
+    "aspect": 1.7765,
+    "widths": [
+      400,
+      640,
+      900,
+      1280,
+      1800,
+      2400
+    ],
+    "formats": [
+      "avif",
+      "webp",
+      "jpg"
+    ]
+  },
   "hauler-texas-front": {
     "width": 1800,
     "height": 1065,

@@ -34,7 +34,7 @@ type Stage = {
  * reader looks for that information anyway.
  *
  * Scroll budget is deliberate: SETTLE px of travel per stage, plus a landing
- * allowance, and a snap that lands on stage centres. An earlier version
+ * allowance, and a snap that lands on stage centers. An earlier version
  * derived the distance from track width alone, which gave roughly 290px per
  * stage at 1920 — fast enough that cards went past unread.
  *
@@ -199,8 +199,8 @@ export function ApplicationRoute() {
             It used to be `flex-1` next to a `whitespace-nowrap` label whose
             text changes with the active step. A fixed-width sibling in a flex
             row sets the rail's width, so every step change re-measured the
-            rail and shifted the nodes, the fill and the travelling head
-            sideways — and the line never sat centred in the section, because
+            rail and shifted the nodes, the fill and the traveling head
+            sideways — and the line never sat centered in the section, because
             the label was eating the right fifth of it. The readout is now
             left-aligned under the rail, so it grows rightward from a fixed
             origin and moves nothing. */}

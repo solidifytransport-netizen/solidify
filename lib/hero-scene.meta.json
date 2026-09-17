@@ -1,14 +1,14 @@
 {
-  "photo": "hauler-texas-road",
+  "photo": "hauler-solidify-highway",
   "width": 512,
-  "height": 318,
+  "height": 288,
   "focal": [
-    0.62,
-    0.54
+    0.72,
+    0.52
   ],
   "vanish": [
-    0.06,
-    0.6
+    0.02,
+    0.62
   ],
-  "horizon": 0.56
+  "horizon": 0.52
 }

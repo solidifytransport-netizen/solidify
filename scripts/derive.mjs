@@ -11,7 +11,7 @@
  *
  * A derived crop is a NEW photograph for the purposes of the two-uses-per-
  * photograph rule, and rightly so: a portrait crop of one vehicle on a deck is
- * a different picture from the wide frame it came out of. It is not a licence
+ * a different picture from the wide frame it came out of. It is not a license
  * to run the same composition twice under two names.
  */
 import sharp from "sharp";

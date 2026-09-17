@@ -54,11 +54,11 @@ export function Road({ id = "road" }: { id?: string }) {
             onUpdate: (self) => {
               if (odo) odo.textContent = String(Math.round(self.progress * 100)).padStart(3, "0");
               if (fill) fill.style.transform = `scaleX(${self.progress.toFixed(4)})`;
-              const centre = el.clientWidth / 2;
+              const center = el.clientWidth / 2;
               frames.forEach((f) => {
                 const r = f.getBoundingClientRect();
                 const c = r.left + r.width / 2;
-                f.setAttribute("data-centred", Math.abs(c - centre) < r.width * 0.55 ? "true" : "false");
+                f.setAttribute("data-centered", Math.abs(c - center) < r.width * 0.55 ? "true" : "false");
               });
             },
           },
@@ -186,9 +186,9 @@ function Frame({ index, label, wide = false, children }: { index: string; label:
   return (
     <article
       data-frame
-      data-centred="false"
+      data-centered="false"
       className={clsx(
-        "plate plate-steel relative flex flex-none snap-center flex-col overflow-hidden transition-[filter,opacity] duration-700 data-[centred=false]:lg:opacity-70",
+        "plate plate-steel relative flex flex-none snap-center flex-col overflow-hidden transition-[filter,opacity] duration-700 data-[centered=false]:lg:opacity-70",
         wide ? "w-[88vw] lg:w-[62vw]" : "w-[88vw] lg:w-[40vw]",
         "lg:min-h-0",
       )}

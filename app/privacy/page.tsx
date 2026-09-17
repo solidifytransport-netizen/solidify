@@ -19,7 +19,7 @@ const SECTIONS = [
     h: "Information we collect",
     p: [
       "Quote and contact inquiries: the route, vehicle, timing and contact details you provide, together with the free-text notes you choose to add.",
-      "Driver enquiries: your name, contact details, the licence you hold and whatever you choose to tell us about your driving.",
+      "Driver inquiries: your name, contact details, the license you hold and whatever you choose to tell us about your driving.",
       "Technical information needed to serve the site securely, such as the IP address a request came from, used for rate limiting and abuse prevention.",
     ],
   },

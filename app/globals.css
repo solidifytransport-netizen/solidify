@@ -92,6 +92,16 @@
 }
 
 @layer base {
+  /* A grid with no explicit column at a breakpoint gets one implicit `auto`
+     track, and an auto track will not shrink below its widest child's
+     min-content. At 320 that let a 274px child sit inside a 280px plate with
+     48px of padding and get clipped by the plate's overflow. Tailwind's
+     `grid-cols-N` already uses minmax(0, 1fr); this gives the implicit
+     column the same floor, so a stacked mobile grid always wraps instead. */
+  .grid > * {
+    min-width: 0;
+  }
+
   /* ==========================================================================
      SEMANTIC SURFACES — values written PLAIN in each block (see cascade note).
      ======================================================================== */
@@ -420,7 +430,7 @@
 
   /* ---- Navigation ------------------------------------------------------- */
   /* Sized on its own ramp so five items still fit at 1024 while reading at
-     17px on a wide screen. Inactive is a real colour, not a whisper. */
+     17px on a wide screen. Inactive is a real color, not a whisper. */
   /* The bar loses height as well as gaining a ground. Redefining --nav-h on
      the header alone keeps section padding elsewhere on the full value. */
   header[data-condensed="true"] {
@@ -712,6 +722,18 @@
     font-size: var(--step--2);
   }
 
+  /* Tap area. A text link keeps its line box; its hit box grows to 24px or
+     more through vertical padding cancelled by an equal negative margin, so
+     nothing in the layout moves. WCAG 2.5.8 exempts a link inside a
+     sentence, but the footer lists, the lane links and the phone number are
+     targets in their own right, and a thumb does not know the difference. */
+  .foot-link,
+  .link-underline,
+  .link-trace,
+  [data-phone-link] {
+    padding-block: 0.3rem;
+    margin-block: -0.3rem;
+  }
   .link-underline {
     position: relative;
     display: inline-block;
@@ -720,7 +742,7 @@
     content: "";
     position: absolute;
     left: 0;
-    bottom: -3px;
+    bottom: calc(0.3rem - 3px);
     height: 1px;
     width: 100%;
     background: currentColor;
@@ -1005,6 +1027,12 @@
   .field {
     display: grid;
     gap: 0.45rem;
+  }
+  /* A date input has a min-content width the column may not have (11px short
+     at 1024 in a three-up row), and without this the field widens to fit it
+     and its label is clipped by the plate. Same floor as .grid > * above. */
+  .field > * {
+    min-width: 0;
   }
   .field-label {
     font-size: var(--step--1);

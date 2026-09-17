@@ -21,7 +21,9 @@ node scripts/peek.mjs car-shipping 1536 864 8   # quick headless look at one rou
 node scripts/mail-sink.mjs 3479          # a local stand-in for the mail provider
 node scripts/mail-sink.mjs 3479 --fail   # …that refuses, to prove a failed send is reported
 npm run env:local    # LOCAL ONLY: writes a gitignored .env.local pointed at the sink
-npm run glitches     # layout sweep: track heights, rail widths, page width
+npm run glitches     # layout + responsiveness sweep, 19 viewports 320-2560 (see below)
+npm run spelling     # every rendered word + source copy against en_US; British spellings flagged
+npm run security     # headers, CSP nonces, API refusals, rate limit, robots — run it on production
 npm run imagery:derive <src> <name> <l> <t> <w> <h>   # cut a new master from an existing one
 ```
 
@@ -58,7 +60,7 @@ does not:
   the application will ask for, and then opens it. Anything after approval is
   handled with Solidify directly, off this website.
 - **Drivers** would run Solidify's equipment. Solidify has confirmed nothing
-  about that programme — no pay basis, no experience or endorsement minimums,
+  about that program — no pay basis, no experience or endorsement minimums,
   no benefits, no hiring areas — so `/become-a-driver` states the company, the
   work and the federal floor under 49 CFR 391, and then asks for a
   conversation. It publishes no figure it cannot stand behind, and QA fails
@@ -137,7 +139,7 @@ traces and the specular steel sweep were **removed at the client's call**:
 fanned over the current hero photograph they read as scratches across the truck
 and straight through the call-to-action buttons. Bringing them back needs a
 vanishing point and a road mask authored for whatever photograph is actually in
-place. Only the mask's B (depth) channel is sampled now. The masks are rasterised from hand-authored
+place. Only the mask's B (depth) channel is sampled now. The masks are rasterized from hand-authored
 polygons in `lib/hero-scene.json` by `scripts/masks.mjs`, so **changing the
 hero photograph means re-authoring those polygons**; the texture width is
 clamped to the ladder the master actually produced.
@@ -145,7 +147,7 @@ clamped to the ladder the master actually produced.
 Two things have been tried in other sections and removed, both at the client's
 call — do not reintroduce either without asking:
 
-- Three abstract shader fields (travelling trails, a node field, drifting
+- Three abstract shader fields (traveling trails, a node field, drifting
   volume) behind page sections. An ambient light field says nothing about the
   business.
 - A three.js coverage board: the 48 states extruded from the SVG map's own
@@ -186,13 +188,20 @@ any `h1` above 88px. The navigation and the footer are sized on their own
 ramps (`.nav-link`, `.foot-link`) rather than borrowing the body's, because
 both had gone quiet enough to read as unfinished.
 
-Two layout rules that `npm run glitches` enforces, both of which reached the
+Three layout rules that `npm run glitches` enforces, all of which reached the
 client by eye before it existed:
+
+- **A line break inside a heading is `{" "}<br />`, never a bare `<br />`.**
+  `Lines` does this; do not hand-roll one. Without the space the element's
+  textContent runs the lines together, and SplitText copies textContent into
+  the aria-label it adds for screen readers — every hero heading was being
+  read as "Nationwide autotransport,carrier-direct." `npm run spelling` is
+  what caught it, and it fails on any rendered word that is not a word.
 
 - **A horizontal card track is `items-stretch`, never `items-center`.** One
   card with more content than the rest then sets one height for all of them.
   Centring instead let the odd card both grow AND sit higher than its
-  neighbours — the owner-operator track ran a 169px spread on every laptop
+  neighbors — the owner-operator track ran a 169px spread on every laptop
   viewport.
 - **A progress rail gets its own row.** As a `flex-1` sibling of a label whose
   text changes with the active step, the rail is re-measured on every step and
@@ -200,8 +209,16 @@ client by eye before it existed:
   half the shell. The readout goes on a line beneath, left-aligned so it grows
   from a fixed origin.
 
+Responsiveness is asserted, not eyeballed. `npm run glitches` loads every
+route at nineteen widths from 320 to 2560 and fails on a horizontal scrollbar,
+any element wider than the viewport, any text run past the viewport edge or
+past its own overflow-hidden box, and — on phones — any tap target under 24px
+or any text under 12px, alongside the track-height, rail, nav-bar and lockup
+checks. The four QA viewports are where the design was drawn; the other
+fifteen are where it has to hold.
+
 Pinned sections own an explicit scroll budget — a per-panel `SETTLE` distance
-plus a landing allowance — and snap to panel centres. Deriving the distance
+plus a landing allowance — and snap to panel centers. Deriving the distance
 from track width alone gave roughly 290px per panel at 1920, which is fast
 enough that panels went past unread.
 
@@ -285,7 +302,27 @@ at rest. The email is the record.
 Preserved: origin checks that fail closed, double-submit CSRF, per-route rate
 limits, an unconditional log redactor, nothing in
 `localStorage`/`sessionStorage`/IndexedDB, and `no-store` on every API
-response. **The only route to a 200 is a 2xx from the mail provider**; a
+response.
+
+Against spam, four layers, cheapest first: a honeypot field, a time-to-fill
+floor (2.5 s), the per-address rate limit, and — once
+`TURNSTILE_SECRET_KEY` / `NEXT_PUBLIC_TURNSTILE_SITE_KEY` are set — a
+Cloudflare Turnstile challenge verified server-side before anything is
+delivered. The gate is fail-closed: with the secret set, a submission without
+a valid token is refused. Turnstile is the one third-party origin the CSP
+admits, and only for `script-src` and `frame-src`; `connect-src` stays
+`'self'`, so nothing on this site can talk to a third party from the page.
+
+Headers, on every response: a per-request-nonce CSP with `strict-dynamic`,
+`frame-ancestors 'none'`, `base-uri 'none'`, `object-src 'none'` and
+`form-action 'self'`; HSTS with preload; `X-Content-Type-Options`,
+`X-Frame-Options`, `Referrer-Policy`, COOP, CORP, a Permissions-Policy
+that switches off every sensor, `X-DNS-Prefetch-Control: off` and no
+`X-Powered-By`. `npm run security` asserts all of it against a running
+target, plus the refusals: a cross-origin POST is 403, an origin-less POST is
+403, a honeypot hit is 422, a too-fast submission is 422, the ninth attempt in
+ten minutes is 429, an unknown API path is a JSON 404, and `/api/health`
+names env vars but never values. **The only route to a 200 is a 2xx from the mail provider**; a
 refused delivery answers 502 and says plainly that nothing was saved. If
 delivery is not configured, every write returns 503 and the forms lock
 themselves — they never simulate success.
@@ -309,6 +346,7 @@ Copy `.env.example` to `.env.local` (or the host's environment) and set:
 | `RESEND_API_KEY` | Mail delivery. Without it nothing can be submitted at all |
 | `MAIL_FROM_EMAIL` | From address on a domain verified with the provider |
 | `INQUIRY_TO_EMAIL` | Where quote and dealership inquiries go |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | Recommended: the Cloudflare Turnstile bot gate on every form (free; both keys required) |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Optional durable rate limiting across serverless instances |
 
 Until delivery is configured, `/api/health` reports the exact reasons — env
@@ -330,6 +368,22 @@ non-repeating heading patterns, image reuse (max two slots per photograph),
 measured focal points, button sizing, unique titles/descriptions/canonicals,
 apply-CTA targets, mobile menu focus trapping, keyboard reachability, the
 quote form's honest outcome, the application panel and storage hygiene,
-reduced-motion behaviour, and console/network cleanliness. Screenshots land in
+reduced-motion behavior, and console/network cleanliness. Screenshots land in
 `qa/` (gitignored) — including mid-states of the pinned sections — for the
 visual review that DOM assertions cannot replace.
+
+Three more suites sit beside it, each against a running target:
+
+- `npm run glitches` — layout and responsiveness, nineteen viewports (above).
+- `npm run spelling` — every text node, attribute, title, description and
+  JSON-LD string on every route, plus string literals and JSX copy in source,
+  checked against Hunspell en_US. A word that is in en_GB but not en_US is a
+  British spelling and fails; so do "whilst", "towards", "grey" and the rest
+  of the words both dictionaries accept but a US reader would not. Proper
+  nouns go in `scripts/spelling-allow.txt`, never as a way to silence a
+  finding. American English is the house style, dates included.
+- `npm run security` — the posture, proven: every header, that every inline
+  script carries the CSP nonce, the API's refusals (cross-origin 403,
+  origin-less 403, honeypot 422, too-fast 422, oversize 413, non-JSON 400,
+  unknown path JSON 404), the rate limiter tripping with Retry-After, robots
+  disallowing /api, and /api/health naming env vars but never values.

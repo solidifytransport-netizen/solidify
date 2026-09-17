@@ -8,6 +8,7 @@ import clsx from "clsx";
 import { vehicleQuoteSchema, oemInquirySchema, driverInquirySchema, US_STATES, STATE_NAMES } from "@/lib/schemas";
 import { COMPANY } from "@/lib/site";
 import { Field, describedBy } from "./Field";
+import { Turnstile, TURNSTILE_SITE_KEY } from "./Turnstile";
 import { PhoneLink } from "@/components/ui/Primitives";
 
 export type Lane = "vehicle" | "oem" | "driver";
@@ -73,6 +74,7 @@ export function InquiryForm({ lane, className, compact = false, bare = false }: 
     setError,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<Values>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -217,7 +219,7 @@ export function InquiryForm({ lane, className, compact = false, bare = false }: 
             </Field>
             <div className="field sm:col-span-2" data-field="operable">
               <span className="field-label">Vehicle condition</span>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2">
                 <label className="radio-tile">
                   <input type="radio" value="operable" {...register("operable")} /> Runs and drives
                 </label>
@@ -326,6 +328,20 @@ export function InquiryForm({ lane, className, compact = false, bare = false }: 
         <p className="rounded-md border border-[var(--color-error)]/40 px-4 py-3 text-[var(--step--1)]" role="alert">
           {status.message}
         </p>
+      )}
+
+      {/* The bot gate. Renders nothing until NEXT_PUBLIC_TURNSTILE_SITE_KEY is
+          set; the server has the matching switch. The token goes up with the
+          rest of the values and is checked before anything is delivered. */}
+      {TURNSTILE_SITE_KEY && (
+        <div className="flex flex-col gap-2">
+          <Turnstile action={`inquiry-${lane}`} onToken={(t) => setValue("turnstileToken", t, { shouldValidate: false })} className="min-h-[65px]" />
+          {err("turnstileToken") && (
+            <p className="field-error" role="alert">
+              {err("turnstileToken")}
+            </p>
+          )}
+        </div>
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-4 pt-1">

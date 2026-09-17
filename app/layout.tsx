@@ -5,6 +5,7 @@ import { SITE_URL, COMPANY, META } from "@/lib/site";
 import { organizationLd } from "@/lib/seo";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { Header } from "@/components/layout/Header";
+import { BackToTop } from "@/components/layout/BackToTop";
 import { Cursor } from "@/components/ui/Cursor";
 import { JsonLd } from "@/components/layout/JsonLd";
 
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Cursor />
           <Header />
           <main id="main">{children}</main>
+          <BackToTop />
         </SmoothScroll>
       </body>
     </html>

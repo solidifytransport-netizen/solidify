@@ -142,7 +142,7 @@ export function PageHero({
           <div data-hero-rail aria-hidden className="hairline-route origin-left" style={{ transform: "scaleX(0)" }} />
           <dl className="mt-4 flex flex-wrap gap-x-10 gap-y-3">
             {railSpecs.map((s) => (
-              <div key={s.label} className="flex items-baseline gap-3">
+              <div key={s.label} className="flex flex-col gap-1 min-[480px]:flex-row min-[480px]:items-baseline min-[480px]:gap-3">
                 <dt className="label">{s.label}</dt>
                 <dd className="spec !text-[var(--text-hi)]">{s.value}</dd>
               </div>

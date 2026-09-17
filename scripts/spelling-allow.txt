@@ -1,0 +1,20 @@
+# Proper nouns and trade terms that are correct as written. One per line.
+# Add only words that are genuinely right; never to silence a finding.
+Solidify
+Syncore
+Tracy
+Naglee
+OEM
+OEMs
+USDOT
+onboarding
+relocations
+licensors
+off-roader
+backend
+WebGL
+Arial
+Helvetica
+json
+https
+Upstash

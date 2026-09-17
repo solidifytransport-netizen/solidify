@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * GET /api/health
- * { ok, inquiry: { configured, reasons? } }
+ * { ok, inquiry: { configured, reasons? }, botGate: { configured } }
  *
  * Reasons are developer-facing and name env vars, never their values.
  *
@@ -24,6 +24,7 @@ export async function GET(req: Request) {
   const cfg = getConfig();
   return json({
     ok: true,
-    inquiry: { configured: cfg.inquiryConfigured, ...(cfg.inquiryConfigured ? {} : { reasons: cfg.inquiryReasons }) },
+    inquiry: { configured: cfg.inquiryConfigured, ...(cfg.inquiryReasons.length ? { reasons: cfg.inquiryReasons } : {}) },
+    botGate: { configured: cfg.turnstileConfigured },
   });
 }

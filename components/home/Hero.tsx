@@ -104,8 +104,12 @@ export function Hero() {
           <Plate slot="hero-carrier" sizes="100vw" priority aspect="fill" parallax={0} reveal={false} overscan={1.06} dim={0.88} grade="deep" className="!absolute inset-0 h-full w-full" />
         </div>
         {gl && <HeroScene className="absolute inset-0" scrollRef={scrollRef} onReady={() => setSceneReady(true)} />}
-        <div aria-hidden className="absolute inset-0 scrim-left-soft opacity-90" />
-        <div aria-hidden className="absolute inset-x-0 bottom-0 h-[52%] scrim-bottom" />
+        {/* The client's render is a bright, saturated daylight frame with the
+            load running right across the text column, so the ground under the
+            copy is the full left scrim rather than the soft one, and the
+            bottom scrim reaches higher. The cab, right of center, stays clear. */}
+        <div aria-hidden className="absolute inset-0 scrim-left" />
+        <div aria-hidden className="absolute inset-x-0 bottom-0 h-[62%] scrim-bottom" />
         <div aria-hidden className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[rgba(5,7,11,0.6)] to-transparent" />
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-40" />
       </div>
