@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { RevealText, Reveal } from "@/components/ui/Reveal";
 import { Lines } from "@/components/ui/Primitives";
 import { HOME } from "@/lib/content/home";
-import { gsap, ScrollTrigger, SplitText, EASE, supportsWebGL, MQ } from "@/lib/motion";
+import { gsap, ScrollTrigger, SplitText, EASE, supportsWebGL, MQ, perfTier } from "@/lib/motion";
 
 const HeroScene = dynamic(() => import("@/components/webgl/HeroScene").then((m) => m.HeroScene), { ssr: false });
 
@@ -27,7 +27,13 @@ export function Hero() {
 
   useEffect(() => {
     const reduced = window.matchMedia(MQ.reduced).matches;
-    setGl(!reduced && supportsWebGL());
+    /* Tier 1 is a touch device or modest hardware. The scene's pointer
+       parallax cannot happen on touch, and what remains — a scroll dolly and
+       grain — is not worth a 517 KB three.js chunk, a 200 KB texture and a
+       44 KB mask on a phone: Lighthouse put mobile total blocking time at
+       3.4 s with it. Phones get the graded photograph; the <picture> is the
+       LCP either way. */
+    setGl(!reduced && supportsWebGL() && perfTier() >= 2);
   }, []);
 
   const h = HOME.hero;
@@ -44,7 +50,8 @@ export function Hero() {
       /* ---- arrival: the mono spec line types itself ---- */
       let split: SplitText | null = null;
       if (spec) {
-        split = new SplitText(spec, { type: "chars" });
+        const chars = spec.querySelector<HTMLElement>("[data-hero-spec-chars]") ?? spec;
+        split = new SplitText(chars, { type: "chars", aria: "none" });
         gsap.set(spec, { opacity: 1 });
         gsap.from(split.chars, { opacity: 0, duration: 0.02, stagger: 0.022, delay: 0.35, ease: "none" });
       }
@@ -115,13 +122,20 @@ export function Hero() {
       </div>
 
       <div className="shell relative z-10 flex flex-col gap-4 pb-[clamp(1.5rem,4vh,3rem)] pt-[calc(var(--nav-h)+1rem)] lg:gap-6 lg:pt-[calc(var(--nav-h)+2rem)]">
-        <p data-hero-spec data-hero-exit className="spec flex flex-wrap gap-x-3 gap-y-1 !text-[var(--text-mid)] opacity-0" aria-label={h.spec}>
-          {h.spec.split(" · ").map((part, i) => (
-            <span key={part} className="whitespace-nowrap">
-              {i > 0 && <span aria-hidden className="mr-3 text-[var(--text-low)]">·</span>}
-              {part}
-            </span>
-          ))}
+        {/* The line types itself character by character, which is noise to a
+            screen reader, so the characters are aria-hidden and the sentence
+            is carried by the sr-only span. (An aria-label on a <p> is
+            prohibited by ARIA and Lighthouse flagged it.) */}
+        <p data-hero-spec data-hero-exit className="spec !text-[var(--text-mid)] opacity-0">
+          <span className="sr-only">{h.spec}</span>
+          <span aria-hidden data-hero-spec-chars className="flex flex-wrap gap-x-3 gap-y-1">
+            {h.spec.split(" · ").map((part, i) => (
+              <span key={part} className="whitespace-nowrap">
+                {i > 0 && <span className="mr-3 text-[var(--text-low)]">·</span>}
+                {part}
+              </span>
+            ))}
+          </span>
         </p>
 
         <RevealText as="h1" id="hero-title" immediate delay={0.25} className="display-xl max-w-[13ch]" mode="lines">

@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import clsx from "clsx";
-import { gsap, ScrollTrigger, EASE, MQ } from "@/lib/motion";
+import { gsap, ScrollTrigger, EASE, MQ, preloadImagesNear } from "@/lib/motion";
 import { Plate } from "@/components/ui/Plate";
 import { Section, SectionMark, SpecStrip, Lines } from "@/components/ui/Primitives";
 import { RevealText, Reveal } from "@/components/ui/Reveal";
@@ -22,6 +22,8 @@ export function Road({ id = "road" }: { id?: string }) {
     () => {
       const el = root.current;
       if (!el) return;
+      /* frames two to four sit off to the right until scrubbed or swiped in */
+      preloadImagesNear(el);
       const reduced = window.matchMedia(MQ.reduced).matches;
       const track = el.querySelector<HTMLElement>("[data-track]");
       const frames = el.querySelectorAll<HTMLElement>("[data-frame]");

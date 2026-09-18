@@ -24,6 +24,7 @@ npm run env:local    # LOCAL ONLY: writes a gitignored .env.local pointed at the
 npm run glitches     # layout + responsiveness sweep, 19 viewports 320-2560 (see below)
 npm run spelling     # every rendered word + source copy against en_US; British spellings flagged
 npm run security     # headers, CSP nonces, API refusals, rate limit, robots — run it on production
+npm run mobile       # phone CONDITIONS: touch profiles, reduced motion off, 4x CPU — every reveal, image, map, board
 npm run imagery:derive <src> <name> <l> <t> <w> <h>   # cut a new master from an existing one
 ```
 
@@ -142,7 +143,69 @@ vanishing point and a road mask authored for whatever photograph is actually in
 place. Only the mask's B (depth) channel is sampled now. The masks are rasterized from hand-authored
 polygons in `lib/hero-scene.json` by `scripts/masks.mjs`, so **changing the
 hero photograph means re-authoring those polygons**; the texture width is
-clamped to the ladder the master actually produced.
+clamped to the ladder the master actually produced, and the texture is WebP.
+
+**The scene is for pointer devices.** `Hero.tsx` mounts it only when
+`perfTier() >= 2` — not on touch, not on modest hardware. Its pointer
+parallax cannot happen on a phone, and what remained was not worth a 517 KB
+three.js chunk, a 200 KB texture and a 44 KB mask on a mobile connection:
+Lighthouse put mobile total blocking time at 3.4 s with it and 0.5 s without.
+Phones get the graded photograph, which is the LCP element either way.
+
+### Mobile performance, and why it is shaped this way
+
+Lighthouse (mobile / desktop): performance **53 → 73–77 / 95 → 98**,
+accessibility 100, total blocking time 3,440 → 580 ms, main-thread work
+14.1 → 4.1 s, first-load weight 1,136 → 689 KB. Real LCP on a Pixel 5 profile
+at 4× CPU throttle is 1.9 s and equals first paint; Lighthouse's simulated
+slow-4G LCP of ~3.9 s is its model of the webfont chain, which `font-display:
+swap` on the display face is a deliberate trade against a fallback-font hero.
+
+What made the difference, each a rule now:
+
+- **No WebGL below tier 2** (above).
+- **Below-the-fold SVG mounts late.** The coverage map (~500 nodes, blur
+  filters) and the quote console's route map render only within 1.5
+  viewports (`useInViewOnce`), behind an aspect-ratio placeholder so nothing
+  shifts, and `lib/us-map.json` (134 KB) is loaded by `lib/us-map.ts` on
+  demand instead of shipping in every page's bundle.
+- **SplitText waits until a heading is near.** `RevealText` splits within a
+  viewport of arriving, not at boot; the hero (`immediate`) splits at once.
+- **Hero type is visible from first paint on touch.** `[data-hero]
+  [data-reveal]` is opacity 1 under `(hover: none) and (pointer: coarse)`
+  and `Reveal.tsx` skips the entrance for it, so the LCP element never waits
+  for JavaScript on a phone.
+- **Track images preload.** `preloadImagesNear(el)` (lib/motion.ts) flips a
+  track's lazy images to eager 1.5 viewports early — a card off to the right,
+  or a beat frame that is clipped and hidden until its turn, is never
+  intersecting when a browser decides what to lazy-load, and would otherwise
+  arrive as an empty frame.
+
+### Motion rules learned on real phones
+
+Three defects reached the client from phones that every width-based suite
+passed. Each is a rule and each is asserted by `npm run mobile`:
+
+- **Scope selectors to the rendering that is displayed.** A section that
+  renders a desktop and a mobile variant must not `querySelectorAll` across
+  both: the desktop nodes come first in document order, so on a phone the
+  Sequence lit a `display:none` frame and parked the visible three as
+  "future" beats — clipped, `visibility:hidden`, never even fetched.
+- **A `gsap.matchMedia` conditions object needs a condition for every
+  device.** The callback runs only when at least one matches; `{ isDesktop,
+  isReduced }` matched nothing on a phone without reduced motion, so the
+  coverage map's entire motion block was skipped there. Include the
+  complement (`isMobile`).
+- **Draw on entry, not on mount.** The movement board drew its first route on
+  page load, 3,000 px below the fold. Anything that animates once should be
+  gated on a `once: true` ScrollTrigger.
+- **No `vector-effect: non-scaling-stroke` on a path DrawSVG measures.**
+  DrawSVG derives a non-scaling path's on-screen length from its bounding box
+  and a near-flat route breaks that (the opening route was drawn to a 9 px
+  dash). Measure in user units and scale the stroke by CSS.
+- **Hover is a mouse idea.** On touch, `pointerenter` and `pointerleave`
+  fire in the same tap; the map now holds a state on tap and ignores the
+  leave for touch.
 
 Two things have been tried in other sections and removed, both at the client's
 call — do not reintroduce either without asking:
@@ -387,3 +450,13 @@ Three more suites sit beside it, each against a running target:
   origin-less 403, honeypot 422, too-fast 422, oversize 413, non-JSON 400,
   unknown path JSON 404), the rate limiter tripping with Retry-After, robots
   disallowing /api, and /api/health naming env vars but never values.
+- `npm run mobile` — phone conditions rather than phone widths: four touch
+  profiles (Pixel 5, a 390 iPhone, a 360 small phone, an 820 tablet), reduced
+  motion OFF, a 4× CPU throttle and a natural scroll down every route. Then:
+  no Plate curtain left over an image, every reveal finished, every visible
+  image decoded, the coverage map landed and a tap holding a state, the
+  movement board drawn to full length, the Sequence on its last beat with its
+  image, no WebGL canvas on touch, no console errors or GSAP warnings. The
+  screenshot suites run with reduced motion on, which makes every reveal
+  immediate — this one never does, because that is exactly what hid three
+  real defects.

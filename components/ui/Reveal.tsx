@@ -16,6 +16,14 @@ type PolymorphicTag = (props: {
 type Mode = "lines" | "words" | "chars";
 
 /**
+ * Hero type on a touch device is shown by CSS from first paint (see the
+ * [data-hero] [data-reveal] rule in globals.css) so the LCP element does not
+ * wait for JavaScript. The entrance is skipped for it here; anything else
+ * would hide what the reader has already seen.
+ */
+const shownByCss = (el: HTMLElement) => el.closest("[data-hero]") !== null && window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+
+/**
  * The site's single text-reveal primitive. Everything is masked at the line
  * box, so glyphs slide out from behind a hard edge rather than fading in.
  * SplitText instances are always reverted on cleanup.
@@ -51,7 +59,7 @@ export function RevealText({
     () => {
       const el = ref.current;
       if (!el) return;
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || shownByCss(el)) {
         gsap.set(el, { opacity: 1 });
         return;
       }
@@ -91,10 +99,33 @@ export function RevealText({
       };
 
       // Splitting before the webfont swaps in produces wrong line breaks.
-      if (document.fonts?.status === "loaded") run();
-      else document.fonts?.ready.then(run).catch(run);
+      const begin = () => {
+        if (document.fonts?.status === "loaded") run();
+        else document.fonts?.ready.then(run).catch(run);
+      };
+
+      /* Splitting is layout work — every word is measured — and a page carries
+         a dozen or more of these, most of them screens below the fold. On a
+         phone that was a visible share of total blocking time at boot. A
+         heading now splits when it is within a viewport of arriving, well
+         ahead of its reveal at 84%; the hero (immediate) splits at once. */
+      let io: IntersectionObserver | null = null;
+      if (immediate || typeof IntersectionObserver === "undefined") begin();
+      else {
+        io = new IntersectionObserver(
+          (entries) => {
+            if (!entries.some((e) => e.isIntersecting)) return;
+            io?.disconnect();
+            io = null;
+            begin();
+          },
+          { rootMargin: "100% 0px" },
+        );
+        io.observe(el);
+      }
 
       return () => {
+        io?.disconnect();
         trigger?.kill();
         tween?.kill();
         split?.revert();
@@ -141,7 +172,7 @@ export function Reveal({
     () => {
       const el = ref.current;
       if (!el) return;
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || shownByCss(el)) {
         gsap.set(el, { opacity: 1 });
         return;
       }

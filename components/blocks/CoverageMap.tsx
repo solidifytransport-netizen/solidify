@@ -2,53 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
+import { useInViewOnce } from "@/lib/hooks";
 import clsx from "clsx";
 import { gsap, EASE, DUR, STAGGER, MQ, prefersReducedMotion } from "@/lib/motion";
-import { FOCUS_STATES } from "@/lib/site";
 import { STATE_NAMES } from "@/lib/schemas";
-import map from "@/lib/us-map.json";
+import { FOCUS_NAMES, US_MAP_VIEWBOX, WEST, loadUsMap, type St, type UsMap } from "@/lib/us-map";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
 import { Section, Eyebrow, SectionMark, type Surface } from "@/components/ui/Primitives";
 
-type St = { id: string; abbr: string; name: string; d: string; cx: number; cy: number };
-const STATES = (map as { viewBox: string; states: St[] }).states;
-const VIEWBOX = (map as { viewBox: string }).viewBox;
-const WEST = new Set<string>(FOCUS_STATES);
-const FOCUS = STATES.filter((s) => WEST.has(s.abbr));
-
-/**
- * The true center of a state's outline.
- *
- * The path data is M/L/Z only (topojson → svg), so every number in `d` is a
- * coordinate and an exact bounding box is a pairwise min/max — no getBBox, no
- * layout dependency, identical on the server and the client.
- *
- * This exists because `s.cx/s.cy` are LABEL anchors, not centroids, and they
- * drift by as much as 24 user units on the long states. Scaling a state about
- * its label anchor slides it sideways as it grows; scaling about this does
- * not.
- */
-function box(d: string) {
-  const n = d.match(/-?\d+(?:\.\d+)?/g)!.map(Number);
-  let x0 = Infinity;
-  let y0 = Infinity;
-  let x1 = -Infinity;
-  let y1 = -Infinity;
-  for (let i = 0; i < n.length; i += 2) {
-    if (n[i] < x0) x0 = n[i];
-    if (n[i] > x1) x1 = n[i];
-    if (n[i + 1] < y0) y0 = n[i + 1];
-    if (n[i + 1] > y1) y1 = n[i + 1];
-  }
-  return { ox: (x0 + x1) / 2, oy: (y0 + y1) / 2 };
-}
-
-const ORIGIN: Record<string, { ox: number; oy: number }> = Object.fromEntries(FOCUS.map((s) => [s.abbr, box(s.d)]));
-
-/** North-west to south-east: the order the focus block assembles in. */
-const SWEEP = [...FOCUS].sort((a, b) => ORIGIN[a.abbr].ox + ORIGIN[a.abbr].oy - (ORIGIN[b.abbr].ox + ORIGIN[b.abbr].oy));
-/** The reverse is the PAINT order: down-right first, so up-left tiles shingle on top of their neighbors, consistent with a lamp at the upper left. */
-const PAINT = [...SWEEP].reverse();
+/* Geometry — 48 outlines, 134 KB — is loaded by lib/us-map.ts when the map
+   is near, and derived there (sweep order, paint order, true centers). */
 
 /**
  * Padded frame. Required, not cosmetic: a focus state at hover scale plus its
@@ -56,9 +19,10 @@ const PAINT = [...SWEEP].reverse();
  * and the section carries `overflow-clip` so `overflow: visible` would spill
  * onto the next grid column instead. The aspect shifts 1.598 → 1.568.
  */
-const [VX, VY, VW, VH] = VIEWBOX.split(/[\s,]+/).map(Number);
+const [VX, VY, VW, VH] = US_MAP_VIEWBOX.split(/[\s,]+/).map(Number);
 const PAD = 16;
 const FRAME = `${VX - PAD} ${VY - PAD} ${VW + PAD * 2} ${VH + PAD * 2}`;
+const FRAME_ASPECT = `${VW + PAD * 2} / ${VH + PAD * 2}`;
 
 type Params = { rest: number; hot: number; wx: number; wy: number; hwx: number; hwy: number };
 
@@ -101,30 +65,50 @@ export function CoverageMap({
 }) {
   const root = useRef<HTMLDivElement>(null);
   const light = useRef<HTMLDivElement>(null);
-  const [hover, setHover] = useState<St | null>(null);
+  const [hover, setHover] = useState<Pick<St, "abbr" | "name"> | null>(null);
   /** Written by matchMedia, read by the hover effect. */
   const cfg = useRef<Params | null>(null);
   /** The entry timeline owns the tiles until it finishes. */
   const landed = useRef(false);
+  /* The map is ~500 SVG nodes with blur filters, and it sits below the fold
+     on every page. Mounting it a viewport and a half before it is reached
+     keeps it out of hydration — on a phone that was a measurable slice of a
+     1.2 s long task — without ever letting the reader see it arrive late.
+     The placeholder reserves the exact aspect, so nothing shifts. */
+  const [nearRef, near] = useInViewOnce<HTMLDivElement>("150% 0px");
+  const [data, setData] = useState<UsMap | null>(null);
+  useEffect(() => {
+    if (!near) return;
+    let live = true;
+    loadUsMap().then((d) => { if (live) setData(d); });
+    return () => { live = false; };
+  }, [near]);
 
   useGSAP(
     () => {
       const el = root.current;
-      if (!el) return;
+      if (!el || !data) return;
       const q = gsap.utils.selector(el);
       const groundStrokes = q("[data-ground-stroke]");
       const cast = q("[data-cast]")[0];
       const glow = q("[data-west-glow]")[0];
       /* Built in SWEEP order by abbr, not document order — document order is
          PAINT (reversed), and the stagger must run north-west to south-east. */
-      const tiles = SWEEP.map((s) => el.querySelector<SVGGElement>(`[data-abbr="${s.abbr}"]`)!).filter(Boolean);
+      const tiles = data.sweep.map((s) => el.querySelector<SVGGElement>(`[data-abbr="${s.abbr}"]`)!).filter(Boolean);
       const walls = tiles.map((t) => t.querySelector("[data-wall]")!);
       const edges = tiles.map((t) => t.querySelector("[data-tile-edge]")!);
 
       const mm = gsap.matchMedia();
 
-      mm.add({ isDesktop: MQ.desktop, isReduced: MQ.reduced }, (ctx) => {
-        const { isDesktop, isReduced } = ctx.conditions as { isDesktop: boolean; isReduced: boolean };
+      /* Every viewport must match SOMETHING here. gsap.matchMedia runs a
+         conditions-object callback only when at least one condition is true,
+         and the earlier pair — desktop, reduced — left a phone with no
+         reduced-motion preference matching neither. The whole block was
+         skipped on phones: no entry animation, `landed` never set, `cfg`
+         null, so every tap on a state was ignored too. `isMobile` is the
+         complement of `isDesktop`, so the callback now always runs. */
+      mm.add({ isDesktop: MQ.desktop, isMobile: MQ.mobile, isReduced: MQ.reduced }, (ctx) => {
+        const { isDesktop, isReduced } = ctx.conditions as { isDesktop: boolean; isMobile: boolean; isReduced: boolean };
         /* Mobile scales harder: at 390px the map renders at ~0.35 CSS px per
            user unit, so a 5% lip is under two pixels and reads as nothing. */
         const P: Params = isDesktop
@@ -141,6 +125,7 @@ export function CoverageMap({
           gsap.set(cast, { opacity: 0.5 });
           gsap.set(glow, { opacity: 0.6 });
           landed.current = true;
+          el.dataset.landed = "true";
           return;
         }
 
@@ -154,6 +139,7 @@ export function CoverageMap({
           scrollTrigger: { trigger: el, start: "top 72%", once: true },
           onComplete: () => {
             landed.current = true;
+            el.dataset.landed = "true"; /* read by scripts/mobile.mjs */
           },
         });
         tl.to(groundStrokes, { drawSVG: "100%", duration: DUR.camera, ease: EASE.inOut, stagger: { each: 0.012, from: "start" } })
@@ -174,7 +160,7 @@ export function CoverageMap({
 
       return () => mm.revert();
     },
-    { scope: root },
+    { scope: root, dependencies: [data] },
   );
 
   /* Hover, in one place, so the map and the chips beside it drive the same
@@ -194,6 +180,24 @@ export function CoverageMap({
     });
   }, [hover]);
 
+  /* Hover is a mouse idea. On touch, pointerenter and pointerleave fire in
+     the same tap, so a state lit and unlit before it could be seen. A tap now
+     holds the state (tap again, or tap another, to change it) and the leave
+     events are ignored for touch. */
+  const isTouch = (e: React.PointerEvent) => e.pointerType === "touch" || e.pointerType === "pen";
+  const enter = (s: Pick<St, "abbr" | "name">) => (e: React.PointerEvent) => {
+    if (isTouch(e)) return;
+    setHover(s);
+  };
+  const leave = (e: React.PointerEvent) => {
+    if (isTouch(e)) return;
+    setHover(null);
+  };
+  const tap = (s: Pick<St, "abbr" | "name">) => (e: React.PointerEvent) => {
+    if (!isTouch(e)) return;
+    setHover((prev) => (prev?.abbr === s.abbr ? null : s));
+  };
+
   // Pointer-following light — the map reads as lit, not painted.
   const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -202,12 +206,15 @@ export function CoverageMap({
     if (light.current) light.current.style.background = `radial-gradient(closest-side at ${x.toFixed(1)}% ${y.toFixed(1)}%, rgba(179,212,255,0.20), transparent 70%)`;
   };
 
-  const westList = FOCUS.slice().sort((a, b) => a.name.localeCompare(b.name));
-  const ground = STATES.filter((s) => !WEST.has(s.abbr));
+  const westList = FOCUS_NAMES;
+  const focus = data?.sweep ?? [];
+  const ground = data ? data.states.filter((s) => !WEST.has(s.abbr)) : [];
+  const origin = data?.origin ?? {};
   /* The hovered tile paints last so it rises above its neighbors — SVG has no
      z-index. React MOVES the keyed node rather than recreating it, so the
      inline GSAP transform survives; the key must stay `s.abbr`. */
-  const painted = hover && WEST.has(hover.abbr) ? [...PAINT.filter((s) => s.abbr !== hover.abbr), hover] : PAINT;
+  const hovered = hover && data ? data.states.find((s) => s.abbr === hover.abbr) : undefined;
+  const painted = data ? (hovered && WEST.has(hovered.abbr) ? [...data.paint.filter((s) => s.abbr !== hovered.abbr), hovered] : data.paint) : [];
 
   return (
     <Section surface={surface} id={id} ariaLabelledBy={`${id}-title`} head="stack" className="overflow-clip">
@@ -227,8 +234,9 @@ export function CoverageMap({
               {westList.map((s) => (
                 <li key={s.abbr}>
                   <span
-                    onPointerEnter={() => setHover(s)}
-                    onPointerLeave={() => setHover(null)}
+                    onPointerEnter={enter(s)}
+                    onPointerLeave={leave}
+                    onPointerDown={tap(s)}
                     className={clsx(
                       "spec inline-flex min-h-[38px] items-center rounded-[4px] border px-3 !text-[var(--step--2)] transition-colors duration-300",
                       hover?.abbr === s.abbr
@@ -244,10 +252,12 @@ export function CoverageMap({
           </Reveal>
         </div>
 
-        <div ref={root} onPointerMove={onMove} className="map-frame relative lg:col-span-7">
+        <div ref={root} onPointerMove={onMove} onPointerDown={onMove} className="map-frame relative lg:col-span-7">
           <div aria-hidden className="pointer-events-none absolute -inset-[10%] -z-10 rounded-full blur-3xl [background:radial-gradient(closest-side,rgba(26,63,112,0.6),transparent_70%)]" />
 
-          <svg viewBox={FRAME} className="w-full" aria-hidden onPointerLeave={() => setHover(null)}>
+          <div ref={nearRef} style={{ aspectRatio: FRAME_ASPECT }}>
+            {data && (
+          <svg viewBox={FRAME} className="w-full" aria-hidden onPointerLeave={leave}>
             <defs>
               <radialGradient id="west-glow" cx="22%" cy="45%" r="42%">
                 <stop offset="0%" stopColor="#4f97ff" stopOpacity="0.5" />
@@ -256,7 +266,7 @@ export function CoverageMap({
 
               {/* Every material layer is a <use> of these, so the focus path
                   data ships twice rather than five times. */}
-              {FOCUS.map((s) => (
+              {focus.map((s) => (
                 <path key={`def-${s.abbr}`} id={`p-${s.abbr}`} d={s.d} />
               ))}
 
@@ -309,7 +319,8 @@ export function CoverageMap({
                   d={s.d}
                   fill={hover?.abbr === s.abbr ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.045)"}
                   className="transition-[fill] duration-300"
-                  onPointerEnter={() => setHover(s)}
+                  onPointerEnter={enter(s)}
+                  onPointerDown={tap(s)}
                 />
               ))}
               {ground.map((s) => (
@@ -331,8 +342,8 @@ export function CoverageMap({
                 opacity is ever tweened, so the filter rasterizes once. */}
             <g data-cast opacity="0" filter="url(#lift-drop)" pointerEvents="none">
               <g transform="translate(6 10)">
-                {FOCUS.map((s) => {
-                  const { ox, oy } = ORIGIN[s.abbr];
+                {focus.map((s) => {
+                  const { ox, oy } = origin[s.abbr];
                   return (
                     <use
                       key={`c-${s.abbr}`}
@@ -347,9 +358,9 @@ export function CoverageMap({
 
             <g data-tiles>
               {painted.map((s) => {
-                const { ox, oy } = ORIGIN[s.abbr];
+                const { ox, oy } = origin[s.abbr];
                 return (
-                  <g key={s.abbr} data-tile data-abbr={s.abbr} data-ox={ox} data-oy={oy} onPointerEnter={() => setHover(s)}>
+                  <g key={s.abbr} data-tile data-abbr={s.abbr} data-ox={ox} data-oy={oy} onPointerEnter={enter(s)} onPointerDown={tap(s)}>
                     <use data-wall href={`#p-${s.abbr}`} fill="url(#tile-wall)" />
                     {/* Opaque: this is what makes the shingled overlap read as
                         deliberate instead of as doubled seams where two
@@ -367,6 +378,8 @@ export function CoverageMap({
               })}
             </g>
           </svg>
+            )}
+          </div>
 
           {/* After the svg: the opaque faces would otherwise hide the pointer
               light exactly where it matters. Auto z-index, so it paints in DOM

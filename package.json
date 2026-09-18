@@ -20,7 +20,8 @@
     "env:local": "node scripts/local-env.mjs",
     "mail:sink": "node scripts/mail-sink.mjs",
     "spelling": "node scripts/spelling.mjs",
-    "security": "node scripts/security.mjs"
+    "security": "node scripts/security.mjs",
+    "mobile": "node scripts/mobile.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

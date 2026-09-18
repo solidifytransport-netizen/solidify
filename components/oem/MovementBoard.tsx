@@ -3,7 +3,7 @@
 import { useRef, useState, type KeyboardEvent } from "react";
 import { useGSAP } from "@gsap/react";
 import clsx from "clsx";
-import { gsap, EASE, MQ } from "@/lib/motion";
+import { gsap, ScrollTrigger, EASE, MQ } from "@/lib/motion";
 import { Plate } from "@/components/ui/Plate";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
 import { Section, SectionMark, Lines, SpecStrip, type Surface } from "@/components/ui/Primitives";
@@ -102,6 +102,12 @@ export function MovementBoard({
 }) {
   const root = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  /* The first route draws when the board comes into view, not on mount. On a
+     phone the board sits ~3000px below the fold; drawn on mount it had
+     finished long before anyone scrolled to it. `seen` flips on entry and
+     every later tab change draws immediately, because the reader is there. */
+  const [seen, setSeen] = useState(false);
+  const seenRef = useRef(false);
   const movement = MOVEMENTS[active];
 
   useGSAP(
@@ -120,11 +126,13 @@ export function MovementBoard({
         if (marker && activePath) gsap.set(marker, { motionPath: { path: activePath, align: activePath, alignOrigin: [0.5, 0.5], start: 1, end: 1 }, autoAlpha: 1 });
         return;
       }
-      routes.forEach((r) => {
-        if (r === activePath) return;
-        gsap.to(r, { opacity: 0.18, duration: 0.5, overwrite: "auto" });
-      });
-      if (activePath) {
+
+      const draw = () => {
+        routes.forEach((r) => {
+          if (r === activePath) return;
+          gsap.to(r, { opacity: 0.18, duration: 0.5, overwrite: "auto" });
+        });
+        if (!activePath) return;
         gsap.set(activePath, { drawSVG: "0%", opacity: 1 });
         const tl = gsap.timeline();
         tl.to(activePath, { drawSVG: "100%", duration: 1.5, ease: EASE.inOut });
@@ -136,22 +144,41 @@ export function MovementBoard({
             0.2,
           );
         }
+      };
+
+      if (seenRef.current) {
+        draw();
+        return;
       }
+      /* Not yet seen: hold the opening state and draw on entry. */
+      if (activePath) gsap.set(activePath, { drawSVG: "0%", opacity: 1 });
+      if (marker) gsap.set(marker, { autoAlpha: 0 });
+      const st = ScrollTrigger.create({
+        trigger: el,
+        start: "top 80%",
+        once: true,
+        onEnter: () => {
+          seenRef.current = true;
+          draw();
+          setSeen(true);
+        },
+      });
+      return () => st.kill();
     },
     { scope: root, dependencies: [active] },
   );
 
-  // teaser: auto-cycle
+  // teaser: auto-cycle, once the board has been seen
   useGSAP(
     () => {
-      if (!teaser) return;
+      if (!teaser || !seen) return;
       if (window.matchMedia(MQ.reduced).matches) return;
       const t = gsap.delayedCall(4.5, () => setActive((a) => (a + 1) % MOVEMENTS.length));
       return () => {
         t.kill();
       };
     },
-    { dependencies: [active, teaser] },
+    { dependencies: [active, teaser, seen] },
   );
 
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -188,7 +215,10 @@ export function MovementBoard({
           <div aria-hidden className="pointer-events-none absolute inset-0 guides" />
           <div className="relative grid lg:grid-cols-12">
             {/* tabs + card */}
-            <div className="flex flex-col gap-6 border-b border-[var(--line)] p-6 lg:col-span-4 lg:border-b-0 lg:border-r lg:p-8">
+            {/* On a phone the board comes FIRST, then the tabs, then the card.
+                With the tabs on top, the board — the thing a tab changes —
+                sat 600px below them, off-screen when you tapped. */}
+            <div className="order-2 flex flex-col gap-6 border-t border-[var(--line)] p-6 lg:order-none lg:col-span-4 lg:border-t-0 lg:border-r lg:p-8">
               {!teaser ? (
                 <div role="tablist" aria-label="Movement type" onKeyDown={onKey} className="flex flex-col gap-2">
                   {MOVEMENTS.map((m, i) => (
@@ -232,7 +262,7 @@ export function MovementBoard({
             </div>
 
             {/* the board */}
-            <div className="relative p-4 lg:col-span-8 lg:p-6">
+            <div className="order-1 relative p-4 lg:order-none lg:col-span-8 lg:p-6">
               <svg viewBox="0 0 1100 420" className="w-full" role="img" aria-label={`Board showing the ${movement.label} route`}>
                 <defs>
                   <pattern id="bp-grid" width="50" height="50" patternUnits="userSpaceOnUse">
@@ -246,7 +276,24 @@ export function MovementBoard({
                 <rect width="1100" height="420" fill="url(#bp-grid)" />
                 {/* all routes, faint */}
                 {MOVEMENTS.map((m) => (
-                  <path key={m.id} data-route={m.id} d={m.path} fill="none" stroke="#b3d4ff" strokeWidth="1.5" strokeLinecap="round" strokeDasharray={m.id === movement.id ? undefined : "4 6"} opacity={m.id === movement.id ? 1 : 0.18} vectorEffect="non-scaling-stroke" />
+                  <path
+                    key={m.id}
+                    data-route={m.id}
+                    d={m.path}
+                    fill="none"
+                    stroke="#b3d4ff"
+                    strokeLinecap="round"
+                    strokeDasharray={m.id === movement.id ? undefined : "8 10"}
+                    opacity={m.id === movement.id ? 1 : 0.18}
+                    /* No vector-effect here, on purpose. DrawSVG measures a
+                       non-scaling-stroke path by comparing its on-screen box to
+                       its geometry, and a nearly flat route (box height ≈ 0)
+                       fails that check — the opening route was drawn with a
+                       9px dash gap instead of its full length. In user units
+                       the length is exact at every scale; the stroke is
+                       scaled by CSS instead. */
+                    className="[stroke-width:3.4] lg:[stroke-width:2]"
+                  />
                 ))}
                 {/* nodes */}
                 {(Object.keys(NODES) as NodeId[]).map((k) => {
@@ -255,7 +302,18 @@ export function MovementBoard({
                     <g key={k} data-node={k} data-on="false" className="transition-opacity duration-500 data-[on=false]:opacity-50">
                       <circle cx={n.x} cy={n.y} r="26" fill="url(#bp-node)" />
                       <NodeGlyph kind={n.kind} x={n.x} y={n.y} />
-                      <text x={n.x} y={n.y + 44} textAnchor="middle" fontSize="12" fontFamily="var(--font-mono)" letterSpacing="1.5" fill="#aab3c0" style={{ textTransform: "uppercase" }}>
+                      <text
+                        x={n.x}
+                        y={n.y + 46}
+                        /* labels near either edge anchor inward so the larger
+                           phone size never runs past the board */
+                        textAnchor={n.x > 960 ? "end" : n.x < 140 ? "start" : "middle"}
+                        fontFamily="var(--font-mono)"
+                        letterSpacing="1.5"
+                        fill="#aab3c0"
+                        className="text-[26px] lg:text-[12px]"
+                        style={{ textTransform: "uppercase" }}
+                      >
                         {n.label.toUpperCase()}
                       </text>
                     </g>
@@ -263,8 +321,8 @@ export function MovementBoard({
                 })}
                 {/* carrier marker */}
                 <g data-marker>
-                  <rect x="-16" y="-6" width="32" height="12" rx="2" fill="#0b0f18" stroke="#b3d4ff" strokeWidth="1.2" />
-                  <rect x="-16" y="-9" width="10" height="7" rx="1.5" fill="#0b0f18" stroke="#b3d4ff" strokeWidth="1.2" />
+                  <rect x="-16" y="-6" width="32" height="12" rx="2" fill="#0b0f18" stroke="#b3d4ff" className="[stroke-width:2.4] lg:[stroke-width:1.2]" />
+                  <rect x="-16" y="-9" width="10" height="7" rx="1.5" fill="#0b0f18" stroke="#b3d4ff" className="[stroke-width:2.4] lg:[stroke-width:1.2]" />
                   <circle cx="-9" cy="7" r="2.2" fill="#b3d4ff" />
                   <circle cx="9" cy="7" r="2.2" fill="#b3d4ff" />
                 </g>

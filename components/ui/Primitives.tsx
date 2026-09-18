@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import clsx from "clsx";
 import { COMPANY, APPLY_URL } from "@/lib/site";
 
@@ -15,8 +15,11 @@ export function Section({
   as: Tag = "section",
   ariaLabelledBy,
   head,
+  ref,
 }: {
   children: ReactNode;
+  /** React 19: a plain ref prop, for sections that animate themselves. */
+  ref?: Ref<HTMLElement>;
   surface?: Surface;
   className?: string;
   id?: string;
@@ -29,6 +32,7 @@ export function Section({
 }) {
   return (
     <Tag
+      ref={ref as Ref<never>}
       id={id}
       data-surface={surface}
       data-section={id}

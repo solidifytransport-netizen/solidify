@@ -1221,6 +1221,17 @@
   .no-js [data-reveal] {
     opacity: 1;
   }
+  /* On a touch device the hero's type is visible from first paint. The H1 is
+     the largest text on the page and therefore the LCP element; hiding it
+     until hydration, the webfont and SplitText had all arrived put mobile
+     LCP at 3.9 s against a 1.2 s first paint. CSS knows the device before
+     any script runs, and Reveal.tsx skips the entrance for these elements so
+     nothing flashes. Desktop keeps the choreography. */
+  @media (hover: none) and (pointer: coarse) {
+    [data-hero] [data-reveal] {
+      opacity: 1;
+    }
+  }
 }
 
 /* ============================================================================

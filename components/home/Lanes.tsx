@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useGSAP } from "@gsap/react";
 import clsx from "clsx";
-import { gsap, Flip, EASE, MQ } from "@/lib/motion";
+import { gsap, Flip, EASE, MQ, preloadImagesNear } from "@/lib/motion";
 import { Plate } from "@/components/ui/Plate";
 import { RevealText, Reveal } from "@/components/ui/Reveal";
 import { Section, SectionMark, Lines } from "@/components/ui/Primitives";
@@ -28,15 +28,20 @@ export function Lanes() {
   const [engaged, setEngaged] = useState(false);
   const items = HOME.lanes.items;
 
-  /* ---- entrance: the section opens over the hero ---- */
+  /* ---- entrance: the section opens over the hero ----
+     `root` is the <Section> itself. It was declared and never attached, so
+     this effect had been returning on its first line since it was written —
+     no entrance, and no image preload for the lanes off to the right. */
   useGSAP(
     () => {
       const el = root.current;
       if (!el) return;
+      /* the lanes off to the right load before anyone swipes to them */
+      const preload = preloadImagesNear(el);
       const reduced = window.matchMedia(MQ.reduced).matches;
       if (reduced) {
         gsap.set(el, { clipPath: "inset(0% 0% 0% 0% round 0px)" });
-        return;
+        return () => preload?.kill();
       }
       gsap.fromTo(
         el,
@@ -107,7 +112,7 @@ export function Lanes() {
   };
 
   return (
-    <Section surface="navy" id="lanes" ariaLabelledBy="lanes-title" head="editorial" className="relative z-[2] overflow-clip">
+    <Section ref={root} surface="navy" id="lanes" ariaLabelledBy="lanes-title" head="editorial" className="relative z-[2] overflow-clip">
       <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-70" />
       <div className="shell relative flex flex-col gap-10 lg:gap-12">
         <div className="flex flex-col gap-6">

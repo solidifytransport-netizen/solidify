@@ -150,7 +150,9 @@ export function HeroScene({
     /* Never ask for a width the ladder did not produce: the master caps the
        ladder, and a missing texture is a 404 plus a hero that never appears. */
     const width = Math.min(tier >= 3 ? 2400 : 1800, scene.textureWidth);
-    const photoUrl = `/media/gen/${scene.photo}-${width}.jpg`;
+    /* WebP: a third smaller than the JPEG at the same quality, decoded by
+       every browser that runs this scene. */
+    const photoUrl = `/media/gen/${scene.photo}-${width}.webp`;
     const maskUrl = `/media/gen/mask-${scene.photo}.png`;
     const textures: THREE.Texture[] = [];
 

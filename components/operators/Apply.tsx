@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
-import { gsap, ScrollTrigger, EASE, MQ } from "@/lib/motion";
+import { gsap, ScrollTrigger, EASE, MQ, preloadImagesNear } from "@/lib/motion";
 import { Plate } from "@/components/ui/Plate";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
 import { Section, SectionMark, Lines, PhoneLink } from "@/components/ui/Primitives";
@@ -65,6 +65,7 @@ export function ApplicationRoute() {
       const el = root.current;
       const track = trackRef.current;
       if (!el || !track) return;
+      preloadImagesNear(el);
       const fill = el.querySelector<HTMLElement>("[data-route-fill]");
       const head = el.querySelector<HTMLElement>("[data-route-head]");
 

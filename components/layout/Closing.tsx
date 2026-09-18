@@ -44,12 +44,12 @@ export function Closing({
       const el = root.current;
       if (!el) return;
       const slats = el.querySelectorAll<HTMLElement>("[data-slat]");
-      const route = el.querySelector<SVGPathElement>("[data-foot-route]");
+      const route = el.querySelector<HTMLElement>("[data-foot-route]");
       const dolly = el.querySelector<HTMLElement>("[data-closing-media] [data-plate-img]");
       const reduced = window.matchMedia(MQ.reduced).matches;
       if (reduced) {
         gsap.set(slats, { clipPath: "inset(0 0 0 0)", yPercent: 0 });
-        if (route) gsap.set(route, { drawSVG: "100%" });
+        if (route) gsap.set(route, { scaleX: 1 });
         return;
       }
       gsap.set(slats, { clipPath: "inset(0 0 100% 0)", yPercent: 18 });
@@ -61,9 +61,13 @@ export function Closing({
         stagger: 0.045,
         scrollTrigger: { trigger: el.querySelector("[data-foot]"), start: "top 80%", once: true },
       });
+      /* A straight hairline needs no path measurement: scaleX from the left
+         edge is the same picture. It used to be a DrawSVG tween on a flat
+         path in a preserveAspectRatio="none" SVG with non-scaling-stroke —
+         the one shape DrawSVG cannot measure — and it warned on every page. */
       if (route) {
-        gsap.set(route, { drawSVG: "0%" });
-        gsap.to(route, { drawSVG: "100%", duration: 2.2, ease: EASE.inOut, scrollTrigger: { trigger: el.querySelector("[data-foot]"), start: "top 85%", once: true } });
+        gsap.set(route, { scaleX: 0 });
+        gsap.to(route, { scaleX: 1, duration: 2.2, ease: EASE.inOut, scrollTrigger: { trigger: el.querySelector("[data-foot]"), start: "top 85%", once: true } });
       }
       if (dolly) {
         gsap.fromTo(dolly, { scale: 1.16 }, { scale: 1.04, ease: "none", scrollTrigger: { trigger: el, start: "top bottom", end: "bottom bottom", scrub: 0.6 } });
@@ -116,9 +120,7 @@ export function Closing({
 
       {/* the footer plate */}
       <div data-foot className={clsx("relative z-10 border-t border-[var(--line-strong)] bg-[#0a0d13]", !compact && "-mt-6 rounded-t-[22px]")}>
-        <svg aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px w-full" viewBox="0 0 1000 1" preserveAspectRatio="none">
-          <path data-foot-route d="M0 0.5 H1000" stroke="rgba(179,212,255,0.8)" strokeWidth="1" vectorEffect="non-scaling-stroke" fill="none" />
-        </svg>
+        <div data-foot-route aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px w-full origin-left bg-[rgba(179,212,255,0.8)]" style={{ transform: "scaleX(0)" }} />
         <div aria-hidden className="pointer-events-none absolute inset-0 guides opacity-60" />
 
         <div className="shell-wide relative flex flex-col gap-12 pb-8 pt-[clamp(3.5rem,6vw,5.5rem)]">

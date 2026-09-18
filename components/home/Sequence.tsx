@@ -3,7 +3,7 @@
 import { Fragment, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import clsx from "clsx";
-import { gsap, ScrollTrigger, EASE, MQ } from "@/lib/motion";
+import { gsap, ScrollTrigger, EASE, MQ, preloadImagesNear } from "@/lib/motion";
 import { Plate } from "@/components/ui/Plate";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
 import { Section, SectionMark, Lines, type Surface } from "@/components/ui/Primitives";
@@ -28,15 +28,32 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
       const el = root.current;
       if (!el) return;
       const reduced = window.matchMedia(MQ.reduced).matches;
-      const frames = el.querySelectorAll<HTMLElement>("[data-beat-frame]");
+      /* Two renderings of the beats live in the DOM at once — the pinned
+         desktop stage and the sticky mobile stage — and only one is displayed.
+         Everything below is scoped to the stage that is actually on screen.
+         An earlier version selected "[data-beat-frame]" across the whole
+         section: the desktop frames come first in document order, so on a
+         phone setActive(0) lit a display:none frame and parked all three
+         visible ones as "future" beats, fully clipped and visibility:hidden.
+         The photographs never appeared, and because hidden images are never
+         lazy-loaded, two of them were never even requested. */
+      const stageD = el.querySelector<HTMLElement>("[data-stage]");
+      const stageM = el.querySelector<HTMLElement>("[data-stage-m]");
+      const framesIn = (stage: HTMLElement | null) => (stage ? Array.from(stage.querySelectorAll<HTMLElement>("[data-beat-frame]")) : []);
+      const allFrames = el.querySelectorAll<HTMLElement>("[data-beat-frame]");
       const copies = el.querySelectorAll<HTMLElement>("[data-beat-copy]");
       const nodes = el.querySelectorAll<HTMLElement>("[data-rail-node]");
-      const fill = el.querySelector<HTMLElement>("[data-rail-fill]");
       const odo = el.querySelector<HTMLElement>("[data-odo]");
       const numerals = el.querySelectorAll<HTMLElement>("[data-beat-num]");
-      if (!frames.length) return;
+      if (!allFrames.length) return;
 
-      const setActive = (i: number, instant = false) => {
+      /* Beats two and three start clipped and hidden, and a hidden <img> is
+         not lazy-loaded, so the wipe would reveal an empty frame. A viewport
+         and a half before the section arrives, every beat image is switched to
+         eager, which starts its fetch at once. */
+      const preload = preloadImagesNear(el);
+
+      const setActive = (i: number, instant: boolean, frames: HTMLElement[]) => {
         frames.forEach((f, j) => {
           const on = j === i;
           if (instant) {
@@ -65,18 +82,22 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
       };
 
       if (reduced) {
-        frames.forEach((f) => gsap.set(f, { clipPath: "none", autoAlpha: 1 }));
+        allFrames.forEach((f) => gsap.set(f, { clipPath: "none", autoAlpha: 1 }));
+        allFrames.forEach((f) => f.querySelectorAll("img").forEach((img) => { img.loading = "eager"; }));
         copies.forEach((c) => gsap.set(c, { autoAlpha: 1 }));
         nodes.forEach((n) => n.setAttribute("data-on", "true"));
-        if (fill) gsap.set(fill, { scaleX: 1 });
+        el.querySelectorAll<HTMLElement>("[data-rail-fill]").forEach((f) => gsap.set(f, { scaleX: 1 }));
+        preload?.kill();
         return;
       }
 
       const mm = gsap.matchMedia();
       mm.add(MQ.desktop, () => {
         let active = -1;
-        setActive(0, true);
-        const stage = el.querySelector<HTMLElement>("[data-stage]");
+        const frames = framesIn(stageD);
+        const fill = stageD?.querySelector<HTMLElement>("[data-rail-fill]") ?? null;
+        setActive(0, true, frames);
+        const stage = stageD;
         const st = ScrollTrigger.create({
           trigger: el,
           start: "top top",
@@ -99,7 +120,7 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
             if (i !== active) {
               const instant = active === -1;
               active = i;
-              setActive(i, instant);
+              setActive(i, instant, frames);
             }
             if (fill) fill.style.transform = `scaleX(${p.toFixed(4)})`;
             if (odo) odo.textContent = `${String(Math.round(p * 100)).padStart(3, "0")}`;
@@ -107,7 +128,7 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
           onRefresh: (self) => {
             const i = Math.min(beats.length - 1, Math.floor(self.progress * beats.length + 0.0001));
             active = i;
-            setActive(i, true);
+            setActive(i, true, frames);
           },
         });
         return () => st.kill();
@@ -116,7 +137,9 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
       mm.add(MQ.mobile, () => {
         // sticky media: the beat whose copy is nearest the viewport center is active
         let active = -1;
-        setActive(0, true);
+        const frames = framesIn(stageM);
+        const fill = stageM?.querySelector<HTMLElement>("[data-rail-fill]") ?? null;
+        setActive(0, true, frames);
         const items = el.querySelectorAll<HTMLElement>("[data-beat-copy-m]");
         const st = ScrollTrigger.create({
           trigger: el,
@@ -137,7 +160,7 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
             if (best !== active) {
               const instant = active === -1;
               active = best;
-              setActive(best, instant);
+              setActive(best, instant, frames);
             }
             if (fill) fill.style.transform = `scaleX(${self.progress.toFixed(4)})`;
           },
@@ -145,7 +168,10 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
         return () => st.kill();
       });
 
-      return () => mm.revert();
+      return () => {
+        preload?.kill();
+        mm.revert();
+      };
     },
     { scope: root },
   );
@@ -281,7 +307,7 @@ export function Sequence({ id = "sequence", surface = "deep", lead }: { id?: str
               <p className="lead">{lead ?? HOME.sequence.lead}</p>
             </Reveal>
           </div>
-          <div className="sticky top-[var(--nav-h)] z-[1] mt-8">
+          <div data-stage-m className="sticky top-[var(--nav-h)] z-[1] mt-8">
             <div className="relative h-[52svh] overflow-hidden">
               {beats.map((b, i) => (
                 <div key={b.slot} data-beat-frame className="absolute inset-0" style={{ clipPath: i === 0 ? "inset(0% 0% 0% 0%)" : "inset(0% 100% 0% 0%)" }}>

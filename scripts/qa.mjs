@@ -346,7 +346,7 @@ try {
     if (vp.mobile) {
       // A phone does not carry a desktop cache: a fresh context keeps srcset selection honest.
       await ctx.close();
-      ctx = await browser.newContext({ viewport: { width: vp.w, height: vp.h }, deviceScaleFactor: 1, colorScheme: "dark" });
+      ctx = await browser.newContext({ viewport: { width: vp.w, height: vp.h }, deviceScaleFactor: vp.mobile ? 3 : 1, isMobile: !!vp.mobile, hasTouch: !!vp.mobile, colorScheme: "dark" });
       page = await ctx.newPage();
       attach(page);
     }
@@ -376,8 +376,13 @@ try {
       check(`${label} no iframes`, f.iframes.length === 0, f.iframes.join(", "));
       check(`${label} contrast >= 4.5:1 (approx)`, f.contrastFailures.length === 0, f.contrastFailures.join(" | "));
       if (vp.mobile) {
-        const tooBig = f.chosen.filter((c) => c.w > 900);
-        check(`${label} no image variant wider than 900px on mobile`, tooBig.length === 0, tooBig.map((c) => `${c.name}@${c.w}`).join(", "));
+        /* The phone context has a real device pixel ratio (3), so a full-width
+           image on a 390px screen legitimately wants ~1170 device pixels and
+           the browser picks the 1280 rung. The ceiling is the next rung above
+           width × DPR — never the 1800 or 2400 desktop variants. */
+        const ceiling = vp.w * 3 <= 900 ? 900 : 1280;
+        const tooBig = f.chosen.filter((c) => c.w > ceiling);
+        check(`${label} no image variant above the phone ceiling (${ceiling}px at DPR 3)`, tooBig.length === 0, tooBig.map((c) => `${c.name}@${c.w}`).join(", "));
         if (f.chosen.length) check(`${label} modern formats served`, f.chosen.some((c) => c.type !== "jpg"), `${f.chosen.filter((c) => c.type !== "jpg").length}/${f.chosen.length}`);
       }
       if (vp.name === "1536") {
@@ -402,7 +407,8 @@ try {
         check(`[${pg.name}] no stretched type`, f.stretched === 0, String(f.stretched));
         check(`[${pg.name}] no photography-credit links`, f.creditLinks === 0, String(f.creditLinks));
         check(`[${pg.name}] WebGL only on the home hero`, pg.name === "home" ? f.canvases <= 1 : f.canvases === 0, String(f.canvases));
-        if (pg.name === "home") check("[home] the hero scene is mounted", f.canvas >= 1, String(f.canvas));
+        /* The scene is for pointer devices: phones get the photograph (perfTier < 2). */
+        if (pg.name === "home") check(vp.mobile ? "[home] no WebGL on a phone" : "[home] the hero scene is mounted", vp.mobile ? f.canvas === 0 : f.canvas >= 1, String(f.canvas));
         if (pg.name === "owner-operators") check("[owner-operators] carries the one external portal link", f.applyLinks === 1, String(f.applyLinks));
         else check(`[${pg.name}] does not leave the domain`, f.applyLinks === 0, String(f.applyLinks));
         if (pg.name === "contact") check("[contact] three inquiry lanes", f.laneTabs === 3, String(f.laneTabs));
@@ -454,7 +460,7 @@ try {
           check("[terms] carries no photography credits", !/photo by|image credit/i.test(f.text), "");
         }
         if (pg.name === "home") {
-          check(`[home] hero WebGL canvas mounted (motion on)`, f.canvas >= 1, String(f.canvas));
+          check(vp.mobile ? `[home] no WebGL canvas on a phone (motion on)` : `[home] hero WebGL canvas mounted (motion on)`, vp.mobile ? f.canvas === 0 : f.canvas >= 1, String(f.canvas));
           check(`[home] not dominated by recruiting`, (f.text.match(/owner-operator/g) || []).length <= 8, String((f.text.match(/owner-operator/g) || []).length));
         }
       }

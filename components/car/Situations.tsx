@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import clsx from "clsx";
-import { gsap, ScrollTrigger, Flip, EASE, MQ } from "@/lib/motion";
+import { gsap, ScrollTrigger, Flip, EASE, MQ, preloadImagesNear } from "@/lib/motion";
 import { Plate } from "@/components/ui/Plate";
 import { Reveal, RevealText } from "@/components/ui/Reveal";
 import { Section, SectionMark, Lines } from "@/components/ui/Primitives";
@@ -67,6 +67,8 @@ export function Situations() {
       const el = root.current;
       const track = trackRef.current;
       if (!el || !track) return;
+      /* panels two to six sit off to the right until scrubbed or swiped in */
+      preloadImagesNear(el);
       const fill = el.querySelector<HTMLElement>("[data-fill]");
       const reduced = window.matchMedia(MQ.reduced).matches;
       if (reduced) {

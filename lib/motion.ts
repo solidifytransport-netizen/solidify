@@ -88,6 +88,31 @@ export const MQ = {
   reduced: "(prefers-reduced-motion: reduce)",
 } as const;
 
+/**
+ * Start loading every image inside `el` once it is within `start` of the
+ * viewport, instead of when each image individually intersects.
+ *
+ * Browsers lazy-load by intersection with the viewport, and a card sitting
+ * off to the right in a horizontal track — or a beat frame that is clipped
+ * and hidden until its turn — never intersects until the moment it is
+ * needed, so it arrives as an empty frame and fills in a beat later. One
+ * ScrollTrigger on the track, a viewport and a half early, flips the images
+ * to eager; setting `loading` to eager starts the fetch at once. Returns the
+ * trigger so the caller can kill it with everything else.
+ */
+export function preloadImagesNear(el: Element, ahead = 1.5): ScrollTrigger | null {
+  const go = () => el.querySelectorAll<HTMLImageElement>("img[loading='lazy']").forEach((img) => { img.loading = "eager"; });
+  /* Already within range at creation — the section just under the hero, say.
+     ScrollTrigger does not fire onEnter for a range you are already inside
+     when it is created, so that case is handled here, synchronously. */
+  const r = el.getBoundingClientRect();
+  if (r.top < window.innerHeight * ahead && r.bottom > 0) {
+    go();
+    return null;
+  }
+  return ScrollTrigger.create({ trigger: el, start: `top ${Math.round(ahead * 100)}%`, once: true, onEnter: go });
+}
+
 export function prefersReducedMotion(): boolean {
   if (typeof window === "undefined") return false;
   return window.matchMedia(MQ.reduced).matches;

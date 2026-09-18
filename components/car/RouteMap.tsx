@@ -2,13 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
+import { useInViewOnce } from "@/lib/hooks";
 import { gsap, EASE, MQ } from "@/lib/motion";
-import map from "@/lib/us-map.json";
+import { US_MAP_VIEWBOX, loadUsMap, type St, type UsMap } from "@/lib/us-map";
 import { FOCUS_STATES } from "@/lib/site";
 
-type St = { id: string; abbr: string; name: string; d: string; cx: number; cy: number };
-const STATES = (map as { viewBox: string; states: St[] }).states;
-const VIEWBOX = (map as { viewBox: string }).viewBox;
+const VIEWBOX = US_MAP_VIEWBOX;
+const VIEWBOX_ASPECT = (() => {
+  const [, , w, h] = VIEWBOX.split(/\s+/).map(Number);
+  return `${w} / ${h}`;
+})();
 const WEST = new Set<string>(FOCUS_STATES);
 
 export type RouteDetail = { pickupState?: string; deliveryState?: string };
@@ -22,6 +25,16 @@ export const ROUTE_EVENT = "solidify:route";
 export function RouteMap() {
   const root = useRef<HTMLDivElement>(null);
   const [route, setRoute] = useState<RouteDetail>({});
+  /* 48 state outlines, mounted only when the quote console is near. */
+  const [nearRef, near] = useInViewOnce<HTMLDivElement>("150% 0px");
+  const [data, setData] = useState<UsMap | null>(null);
+  useEffect(() => {
+    if (!near) return;
+    let live = true;
+    loadUsMap().then((d) => { if (live) setData(d); });
+    return () => { live = false; };
+  }, [near]);
+  const STATES: St[] = data?.states ?? [];
 
   useEffect(() => {
     const on = (e: Event) => setRoute((e as CustomEvent<RouteDetail>).detail ?? {});
@@ -49,7 +62,7 @@ export function RouteMap() {
       tl.to(line, { drawSVG: "100%", duration: 1.2, ease: EASE.inOut });
       if (dot) tl.fromTo(dot, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4 }, 0.9);
     },
-    { scope: root, dependencies: [from?.abbr, to?.abbr] },
+    { scope: root, dependencies: [from?.abbr, to?.abbr, data] },
   );
 
   const path = from && to ? `M ${from.cx} ${from.cy} Q ${(from.cx + to.cx) / 2} ${Math.min(from.cy, to.cy) - 60} ${to.cx} ${to.cy}` : null;
@@ -62,6 +75,8 @@ export function RouteMap() {
           {from ? from.abbr : "—"} → {to ? to.abbr : "—"}
         </span>
       </div>
+      <div ref={nearRef} style={{ aspectRatio: VIEWBOX_ASPECT }}>
+        {data && (
       <svg viewBox={VIEWBOX} className="w-full" aria-hidden>
         {STATES.map((s) => {
           const on = s.abbr === from?.abbr || s.abbr === to?.abbr;
@@ -79,12 +94,17 @@ export function RouteMap() {
         })}
         {path && (
           <>
-            <path key={path} data-route-line d={path} fill="none" stroke="#b3d4ff" strokeWidth="1.6" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+            {/* No non-scaling-stroke: DrawSVG measures such a path from its
+                on-screen box and a near-horizontal route breaks that. In user
+                units the length is exact; the stroke scales by CSS instead. */}
+            <path key={path} data-route-line d={path} fill="none" stroke="#b3d4ff" strokeLinecap="round" className="[stroke-width:3] lg:[stroke-width:2]" />
             <circle cx={from!.cx} cy={from!.cy} r="4" fill="#b3d4ff" />
             <circle data-route-dot cx={to!.cx} cy={to!.cy} r="4" fill="#b3d4ff" />
           </>
         )}
       </svg>
+        )}
+      </div>
       <p className="sr-only">
         {from && to ? `Route from ${from.name} to ${to.name}.` : "Select a pickup and delivery state to see the route."}
       </p>
